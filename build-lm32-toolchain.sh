@@ -3,12 +3,12 @@
 set -e
 
 GMP=gmp-6.1.2
-MPFR=mpfr-3.1.5
-MPC=mpc-1.0.3
-GCC=gcc-6.3.0
-NEWLIB=newlib-2.5.0.20170228
-BINUTILS=binutils-2.28
-GDB=gdb-7.12.1
+MPFR=mpfr-4.0.2
+MPC=mpc-1.1.0
+GCC=gcc-9.1.0
+NEWLIB=newlib-3.1.0
+BINUTILS=binutils-2.32
+GDB=gdb-8.3
 
 GNU_MIRROR=https://ftp.gnu.org
 #GNU_MIRROR=http://mirror.internode.on.net/pub
@@ -27,8 +27,8 @@ tar xf ${MPC}.tar.gz
 
 # gcc
 
-wget -N $GNU_MIRROR/gnu/gcc/${GCC}/${GCC}.tar.bz2
-tar xf ${GCC}.tar.bz2
+wget -N $GNU_MIRROR/gnu/gcc/${GCC}/${GCC}.tar.xz
+tar xf ${GCC}.tar.xz
 
 # newlib
 wget -N ftp://sourceware.org/pub/newlib/${NEWLIB}.tar.gz
@@ -63,4 +63,4 @@ cd ..
 mkdir -p build
 cd build
 ../${GCC}/configure  --prefix=/opt/lm32 --enable-languages=c --target=lm32-elf
-make -j32
+make -j8
