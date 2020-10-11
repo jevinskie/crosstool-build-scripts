@@ -1,0 +1,11 @@
+*.tar.*
+build-*/
+avr-libc-*/
+avrdude-*/
+binutils-*/
+gcc-*/
+gdb-*/
+gmp-*/
+isl-*/
+mpc-*/
+mpfr-*/
