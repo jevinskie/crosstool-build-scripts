@@ -1,6 +1,10 @@
 #!/bin/bash
 
-set -e
+set -o errexit
+set -o nounset
+set -o pipefail
+
+set -o xtrace
 
 JEV_GMP=gmp-6.2.0
 JEV_MPFR=mpfr-4.1.0
@@ -12,7 +16,7 @@ JEV_BINUTILS=binutils-2.35.1
 JEV_GDB=gdb-9.2
 JEV_ISL=isl-0.22.1
 
-JEV_XTOOL_PREFIX=/opt/avr/avr-gcc-8.4
+JEV_XTOOL_PREFIX=/opt/avr/avr-gcc-10.2
 
 export PATH=${JEV_XTOOL_PREFIX}/bin:${PATH}
 export PKG_CONFIG_PATH=${JEV_XTOOL_PREFIX}/lib/pkgconfig:${PKG_CONFIG_PATH}:`brew --prefix`/lib/pkgconfig
