@@ -16,16 +16,19 @@ JEV_BINUTILS=binutils-2.35.1
 JEV_GDB=gdb-9.2
 JEV_ISL=isl-0.22.1
 
-JEV_XTOOL_PREFIX=/opt/avr/avr-gcc-10.2
+JEV_XTOOL_PREFIX=/opt/avr/avr-gcc-10.2-lto
 
 export PATH=${JEV_XTOOL_PREFIX}/bin:${PATH}
-export PKG_CONFIG_PATH=${JEV_XTOOL_PREFIX}/lib/pkgconfig:${PKG_CONFIG_PATH}:`brew --prefix`/lib/pkgconfig
+export PKG_CONFIG_PATH=${JEV_XTOOL_PREFIX}/lib/pkgconfig:${PKG_CONFIG_PATH:-}:`brew --prefix`/lib/pkgconfig
 export LDFLAGS=-L${JEV_XTOOL_PREFIX}/lib
 export CPPFLAGS=-I${JEV_XTOOL_PREFIX}/include
 export CFLAGS=${CPPFLAGS}
 export CXXFLAGS=${CPPFLAGS}
-export CFLAGS_FOR_TARGET="-DPREFER_SIZE_OVER_SPEED=1 -Os -g -ffunction-sections -fdata-sections"
+export LDFLAGS_FOR_TARGET="-flto -fuse-linker-plugin -ffat-lto-objects"
+export CFLAGS_FOR_TARGET="${LDFLAGS_FOR_TARGET} -DPREFER_SIZE_OVER_SPEED=1 -Os -g -ffunction-sections -fdata-sections"
+export LIBCFLAGS_FOR_TARGET=${CFLAGS_FOR_TARGET}
 export CXXFLAGS_FOR_TARGET=${CFLAGS_FOR_TARGET}
+export LIBCXXFLAGS_FOR_TARGET=${CXXFLAGS_FOR_TARGET}
 
 JEV_GNU_MIRROR=https://ftp.gnu.org
 
