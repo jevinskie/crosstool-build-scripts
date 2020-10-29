@@ -18,8 +18,10 @@ JEV_ISL=isl-0.22.1
 
 JEV_XTOOL_PREFIX=/opt/avr/avr-gcc-10.2-lto
 
+BROOT=`brew --prefix`
+
 export PATH=${JEV_XTOOL_PREFIX}/bin:${PATH}
-export PKG_CONFIG_PATH=${JEV_XTOOL_PREFIX}/lib/pkgconfig:${PKG_CONFIG_PATH:-}:`brew --prefix`/lib/pkgconfig
+export PKG_CONFIG_PATH=${JEV_XTOOL_PREFIX}/lib/pkgconfig:${PKG_CONFIG_PATH:-}:${BROOT}/opt/zlib/lib/pkgconfig:${BROOT}/opt/libusb/lib/pkgconfig:${BROOT}/opt/libusb-compat/lib/pkgconfig:${BROOT}/opt/zstd/lib/pkgconfig:${BROOT}/opt/xz/lib/pkgconfig:${BROOT}/opt/libftdi/lib/pkgconfig:${BROOT}/opt/gettext/lib/pkgconfig:${BROOT}/opt/boost/lib/pkgconfig:${BROOT}/opt/source-highlight/lib/pkgconfig:${BROOT}/opt/libedit/lib/pkgconfig:${BROOT}/opt/expat/lib/pkgconfig:${BROOT}/opt/ncurses/lib/pkgconfig:${BROOT}/lib/pkgconfig
 export LDFLAGS=-L${JEV_XTOOL_PREFIX}/lib
 export CPPFLAGS=-I${JEV_XTOOL_PREFIX}/include
 export CFLAGS=${CPPFLAGS}
@@ -118,6 +120,9 @@ popd
 wget -N ${JEV_GNU_MIRROR}/gnu/gdb/${JEV_GDB}.tar.xz
 rm -rf ${JEV_GDB} build-gdb
 tar xf ${JEV_GDB}.tar.xz
+pushd ${JEV_GDB}
+patch -p 1 < ../gdb-sim-add-some-stdlib.h-includes.patch
+popd
 mkdir -p build-gdb
 pushd build-gdb
 ../${JEV_GDB}/configure --prefix=${JEV_XTOOL_PREFIX} --enable-languages=c,c++ --target=avr

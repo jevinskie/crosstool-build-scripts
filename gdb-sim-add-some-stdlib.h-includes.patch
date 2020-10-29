@@ -1,0 +1,89 @@
+diff -ruN gdb-9.2/sim/common/nrun.c gdb-9.2-orig/sim/common/nrun.c
+--- gdb-9.2/sim/common/nrun.c	2020-05-23 14:10:30.000000000 -0700
++++ gdb-9.2-orig/sim/common/nrun.c	2020-10-29 12:20:06.000000000 -0700
+@@ -20,6 +20,7 @@
+ #endif
+ 
+ #include <signal.h>
++#include <stdlib.h>
+ 
+ /* For strsignal.  */
+ #ifdef HAVE_STRING_H
+diff -ruN gdb-9.2/sim/common/sim-core.c gdb-9.2-orig/sim/common/sim-core.c
+--- gdb-9.2/sim/common/sim-core.c	2020-05-23 14:10:30.000000000 -0700
++++ gdb-9.2-orig/sim/common/sim-core.c	2020-10-29 12:20:06.000000000 -0700
+@@ -30,6 +30,8 @@
+ #include "sim-hw.h"
+ #endif
+ 
++#include <stdlib.h>
++
+ /* "core" module install handler.
+ 
+    This is called via sim_module_install to install the "core"
+diff -ruN gdb-9.2/sim/common/sim-cpu.c gdb-9.2-orig/sim/common/sim-cpu.c
+--- gdb-9.2/sim/common/sim-cpu.c	2020-02-08 04:49:30.000000000 -0800
++++ gdb-9.2-orig/sim/common/sim-cpu.c	2020-10-29 12:24:11.000000000 -0700
+@@ -20,6 +20,8 @@
+ #include "sim-main.h"
+ #include "bfd.h"
+ 
++#include <stdlib.h>
++
+ /* Allocate space for all cpus in the simulator.
+    Space for the cpu must currently exist prior to parsing ARGV.
+    EXTRA_BYTES is additional space to allocate for the sim_cpu struct.  */
+diff -ruN gdb-9.2/sim/common/sim-engine.c gdb-9.2-orig/sim/common/sim-engine.c
+--- gdb-9.2/sim/common/sim-engine.c	2020-05-23 14:10:30.000000000 -0700
++++ gdb-9.2-orig/sim/common/sim-engine.c	2020-10-29 12:20:06.000000000 -0700
+@@ -17,11 +17,12 @@
+ You should have received a copy of the GNU General Public License
+ along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
+ 
+-#include <stdio.h>
+-
+ #include "sim-main.h"
+ #include "sim-assert.h"
+ 
++#include <stdio.h>
++#include <stdlib.h>
++
+ /* Get the run state.
+    REASON/SIGRC are the values returned by sim_stop_reason.
+    ??? Should each cpu have its own copy?  */
+diff -ruN gdb-9.2/sim/common/sim-io.c gdb-9.2-orig/sim/common/sim-io.c
+--- gdb-9.2/sim/common/sim-io.c	2020-05-23 14:10:30.000000000 -0700
++++ gdb-9.2-orig/sim/common/sim-io.c	2020-10-29 12:20:06.000000000 -0700
+@@ -33,6 +33,8 @@
+ #include <unistd.h>
+ #endif
+ 
++#include <stdlib.h>
++
+ /* Define the rate at which the simulator should poll the host
+    for a quit. */
+ #ifndef POLL_QUIT_INTERVAL
+diff -ruN gdb-9.2/sim/common/sim-module.c gdb-9.2-orig/sim/common/sim-module.c
+--- gdb-9.2/sim/common/sim-module.c	2020-05-23 14:10:30.000000000 -0700
++++ gdb-9.2-orig/sim/common/sim-module.c	2020-10-29 12:20:06.000000000 -0700
+@@ -36,6 +36,8 @@
+ 
+ #include "libiberty.h"
+ 
++#include <stdlib.h>
++
+ /* List of all modules.  */
+ static MODULE_INSTALL_FN * const modules[] = {
+   standard_install,
+diff -ruN gdb-9.2/sim/common/sim-reason.c gdb-9.2-orig/sim/common/sim-reason.c
+--- gdb-9.2/sim/common/sim-reason.c	2020-05-23 14:10:30.000000000 -0700
++++ gdb-9.2-orig/sim/common/sim-reason.c	2020-10-29 12:20:06.000000000 -0700
+@@ -20,6 +20,8 @@
+ #include "sim-main.h"
+ #include "sim-assert.h"
+ 
++#include <stdlib.h>
++
+ /* Generic implementation of sim_stop_reason */
+ 
+ void
