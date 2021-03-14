@@ -108,7 +108,7 @@ rm -rf build-gcc
 
 mkdir -p build-gcc
 pushd build-gcc
-../${JEV_GCC}/configure --prefix=${JEV_XTOOL_PREFIX} --enable-languages=c,c++ --disable-nls --enable-multiarch --enable-sysroot --enable-plugin --target=aarch64-elf --without-headers --with-newlib --with-gnu-as --with-gnu-ld
+../${JEV_GCC}/configure --prefix=${JEV_XTOOL_PREFIX} --enable-languages=c,c++ --disable-nls --enable-multiarch --enable-multilib --enable-sysroot --enable-plugin --target=aarch64-elf --without-headers --with-newlib --with-gnu-as --with-gnu-ld
 make -j${NUMJOBS} all-gcc
 make install-gcc
 popd
@@ -123,7 +123,7 @@ popd
 
 # gcc final
 pushd build-gcc
-../${JEV_GCC}/configure --prefix=${JEV_XTOOL_PREFIX} --enable-languages=c,c++ --disable-nls --enable-multiarch --enable-sysroot --enable-plugin --target=aarch64-elf --with-newlib --with-gnu-as --with-gnu-ld
+../${JEV_GCC}/configure --prefix=${JEV_XTOOL_PREFIX} --enable-languages=c,c++ --disable-nls --enable-multiarch --enable-multilib --enable-sysroot --enable-plugin --target=aarch64-elf --with-newlib --with-gnu-as --with-gnu-ld
 make -j8 all
 make install
 popd
@@ -135,7 +135,7 @@ tar xf ${JEV_GDB}.tar.xz
 
 mkdir -p build-gdb
 pushd build-gdb
-../${JEV_GDB}/configure --prefix=${JEV_XTOOL_PREFIX} --enable-languages=c,c++ --disable-nls --target=aarch64-elf
+../${JEV_GDB}/configure --prefix=${JEV_XTOOL_PREFIX} --enable-languages=c,c++ --enable-multiarch --enable-multilib --enable-sysroot --enable-plugin --target=aarch64-elf
 make -j${NUMJOBS} all
 make -j${NUMJOBS} install
 popd
