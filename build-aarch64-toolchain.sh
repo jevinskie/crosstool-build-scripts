@@ -6,12 +6,13 @@ set -o pipefail
 
 set -o xtrace
 
-NUMJOB=16
+NUMJOBS=16
 
 JEV_GMP=gmp-6.2.1
 JEV_MPFR=mpfr-4.1.0
 JEV_MPC=mpc-1.2.1
-JEV_GCC=gcc-10.2.0
+# JEV_GCC=gcc-10.2.0
+JEV_GCC=gcc-git
 JEV_NEWLIB=newlib-4.1.0
 JEV_BINUTILS=binutils-2.36.1
 JEV_GDB=gdb-10.1
@@ -85,26 +86,31 @@ rm -rf ${JEV_BINUTILS} build-binutils
 tar xf ${JEV_BINUTILS}.tar.bz2
 mkdir -p build-binutils
 pushd build-binutils
-../${JEV_BINUTILS}/configure --prefix=${JEV_XTOOL_PREFIX} --enable-languages=c,c++ --disable-nls --target=aarch64-elf
+../${JEV_BINUTILS}/configure --prefix=${JEV_XTOOL_PREFIX} --enable-languages=c,c++ --target=aarch64-elf
 make -j${NUMJOBS} all
 make -j${NUMJOBS} install
 popd
 
 # newlib unpack
-wget -N ftp://sourceware.org/pub/newlib/${JEV_NEWLIB}.tar.gz
+wget -N http://sourceware.org/pub/newlib/${JEV_NEWLIB}.tar.gz
 rm -rf ${JEV_NEWLIB} build-newlib
 tar xf ${JEV_NEWLIB}.tar.gz
 
 # gcc
-wget -N ${JEV_GNU_MIRROR}/gnu/gcc/${JEV_GCC}/${JEV_GCC}.tar.xz
-rm -rf ${JEV_GCC} build-gcc
-tar xf ${JEV_GCC}.tar.xz
+# wget -N ${JEV_GNU_MIRROR}/gnu/gcc/${JEV_GCC}/${JEV_GCC}.tar.xz
+# rm -rf ${JEV_GCC} build-gcc
+# tar xf ${JEV_GCC}.tar.xz
+rm -rf build-gcc
+
+# pushd ${JEV_GCC}
+# patch -p 0 < ../gcc-10-aarch64-cxx11-build-fix.patch
+# popd
 
 mkdir -p build-gcc
 pushd build-gcc
-../${JEV_GCC}/configure --prefix=${JEV_XTOOL_PREFIX} --enable-languages=c,c++ --disable-nls --enable-plugin --target=aarch64-elf --without-headers --with-newlib --with-gnu-as --with-gnu-ld
-make -j${NUMJOBS} all
-make install
+../${JEV_GCC}/configure --prefix=${JEV_XTOOL_PREFIX} --enable-languages=c,c++ --enable-multiarch --enable-sysroot --enable-plugin --target=aarch64-elf --without-headers --with-newlib --with-gnu-as --with-gnu-ld
+make -j${NUMJOBS} all-gcc
+make install-gcc
 popd
 
 # newlib build
@@ -115,13 +121,18 @@ make -j${NUMJOBS} all
 make install
 popd
 
+# gcc final
+pushd build-gcc
+../${JEV_GCC}/configure --prefix=${JEV_XTOOL_PREFIX} --enable-languages=c,c++ --disable-nls --enable-multiarch --enable-sysroot --enable-plugin --target=aarch64-elf --with-newlib --with-gnu-as --with-gnu-ld
+make -j8 all
+make install
+popd
+
 # gdb
 wget -N ${JEV_GNU_MIRROR}/gnu/gdb/${JEV_GDB}.tar.xz
 rm -rf ${JEV_GDB} build-gdb
 tar xf ${JEV_GDB}.tar.xz
-# pushd ${JEV_GDB}
-# patch -p 1 < ../gdb-sim-add-some-stdlib.h-includes.patch
-# popd
+
 mkdir -p build-gdb
 pushd build-gdb
 ../${JEV_GDB}/configure --prefix=${JEV_XTOOL_PREFIX} --enable-languages=c,c++ --target=aarch64-elf

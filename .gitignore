@@ -1,11 +1,11 @@
 *.tar.*
 build-*/
-avr-libc-*/
-avrdude-*/
 binutils-*/
 gcc-*/
+gcc-git
 gdb-*/
 gmp-*/
 isl-*/
 mpc-*/
 mpfr-*/
+newlib-*/
