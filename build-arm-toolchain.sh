@@ -11,14 +11,14 @@ NUMJOBS=16
 JEV_GMP=gmp-6.2.1
 JEV_MPFR=mpfr-4.1.0
 JEV_MPC=mpc-1.2.1
-# JEV_GCC=gcc-10.2.0
+# JEV_GCC=gcc-10.3.0
 JEV_GCC=gcc-git
 JEV_NEWLIB=newlib-4.1.0
 JEV_BINUTILS=binutils-2.36.1
 JEV_GDB=gdb-10.1
 JEV_ISL=isl-0.23
 
-JEV_XTOOL_PREFIX=/opt/aarch64/aarch64-elf-gcc-10.2-lto
+JEV_XTOOL_PREFIX=/opt/arm/arm-none-eabi-gcc-11-git-lto
 
 BROOT=`brew --prefix`
 
@@ -42,7 +42,8 @@ mkdir -p ${JEV_XTOOL_PREFIX}
 
 # gmp
 wget -N ${JEV_GNU_MIRROR}/gnu/gmp/${JEV_GMP}.tar.xz
-rm -rf ${JEV_GMP} build-gmp
+rm -rf build-gmp
+rm -rf ${JEV_GMP}
 tar xf ${JEV_GMP}.tar.xz
 mkdir -p build-gmp
 pushd build-gmp
@@ -52,7 +53,8 @@ popd
 
 # mpfr
 wget -N ${JEV_GNU_MIRROR}/gnu/mpfr/${JEV_MPFR}.tar.xz
-rm -rf ${JEV_MPFR} build-mfr
+rm -rf build-mpfr
+rm -rf ${JEV_MPFR}
 tar xf ${JEV_MPFR}.tar.xz
 mkdir -p build-mpfr
 pushd build-mpfr
@@ -62,7 +64,8 @@ popd
 
 # mpc
 wget -N ${JEV_GNU_MIRROR}/gnu/mpc/${JEV_MPC}.tar.gz
-rm -rf ${JEV_MPC} build-mpc
+rm -rf build-mpc
+rm -rf ${JEV_MPC}
 tar xf ${JEV_MPC}.tar.gz
 mkdir -p build-mpc
 pushd build-mpc
@@ -72,7 +75,8 @@ popd
 
 # isl
 wget -N http://isl.gforge.inria.fr/${JEV_ISL}.tar.xz
-rm -rf ${JEV_ISL} build-isl
+rm -rf build-isl
+rm -rf ${JEV_ISL}
 tar xf ${JEV_ISL}.tar.xz
 mkdir -p build-isl
 pushd build-isl
@@ -82,33 +86,31 @@ popd
 
 # binutils
 wget -N ${JEV_GNU_MIRROR}/gnu/binutils/${JEV_BINUTILS}.tar.bz2
-rm -rf ${JEV_BINUTILS} build-binutils
+rm -rf build-binutils
+rm -rf ${JEV_BINUTILS}
 tar xf ${JEV_BINUTILS}.tar.bz2
 mkdir -p build-binutils
 pushd build-binutils
-../${JEV_BINUTILS}/configure --prefix=${JEV_XTOOL_PREFIX} --enable-languages=c,c++ --disable-nls --enable-multiarch --enable-sysroot --enable-plugin --target=aarch64-elf
+../${JEV_BINUTILS}/configure --prefix=${JEV_XTOOL_PREFIX} --enable-languages=c,c++ --disable-nls --enable-multilib --enable-sysroot --enable-plugin --target=arm-none-eabi
 make -j${NUMJOBS} all
 make -j${NUMJOBS} install
 popd
 
 # newlib unpack
 wget -N http://sourceware.org/pub/newlib/${JEV_NEWLIB}.tar.gz
-rm -rf ${JEV_NEWLIB} build-newlib
+rm -rf build-newlib
+rm -rf ${JEV_NEWLIB}
 tar xf ${JEV_NEWLIB}.tar.gz
 
 # gcc
 # wget -N ${JEV_GNU_MIRROR}/gnu/gcc/${JEV_GCC}/${JEV_GCC}.tar.xz
-# rm -rf ${JEV_GCC} build-gcc
-# tar xf ${JEV_GCC}.tar.xz
 rm -rf build-gcc
-
-# pushd ${JEV_GCC}
-# patch -p 0 < ../gcc-10-aarch64-cxx11-build-fix.patch
-# popd
+# rm -rf ${JEV_GCC}
+# tar xf ${JEV_GCC}.tar.xz
 
 mkdir -p build-gcc
 pushd build-gcc
-../${JEV_GCC}/configure --prefix=${JEV_XTOOL_PREFIX} --enable-languages=c,c++ --disable-nls --enable-multiarch --enable-multilib --enable-sysroot --enable-plugin --target=aarch64-elf --without-headers --with-newlib --with-gnu-as --with-gnu-ld
+../${JEV_GCC}/configure --prefix=${JEV_XTOOL_PREFIX} --enable-languages=c,c++ --disable-nls --enable-multilib --enable-sysroot --enable-plugin --without-headers --with-newlib --with-gnu-as --with-gnu-ld --target=arm-none-eabi --with-multilib-list=rmprofile
 make -j${NUMJOBS} all-gcc
 make install-gcc
 popd
@@ -116,14 +118,14 @@ popd
 # newlib build
 mkdir -p build-newlib
 pushd build-newlib
-../${JEV_NEWLIB}/configure --target=aarch64-elf --prefix=${JEV_XTOOL_PREFIX}
+../${JEV_NEWLIB}/configure --prefix=${JEV_XTOOL_PREFIX} --target=arm-none-eabi
 make -j${NUMJOBS} all
 make install
 popd
 
 # gcc final
 pushd build-gcc
-../${JEV_GCC}/configure --prefix=${JEV_XTOOL_PREFIX} --enable-languages=c,c++ --disable-nls --enable-multiarch --enable-multilib --enable-sysroot --enable-plugin --target=aarch64-elf --with-newlib --with-gnu-as --with-gnu-ld
+../${JEV_GCC}/configure --prefix=${JEV_XTOOL_PREFIX} --enable-languages=c,c++ --disable-nls --enable-multilib --enable-sysroot --enable-plugin --with-newlib --with-gnu-as --with-gnu-ld --target=arm-none-eabi --with-multilib-list=rmprofile
 make -j8 all
 make install
 popd
@@ -135,7 +137,7 @@ tar xf ${JEV_GDB}.tar.xz
 
 mkdir -p build-gdb
 pushd build-gdb
-../${JEV_GDB}/configure --prefix=${JEV_XTOOL_PREFIX} --enable-languages=c,c++ --enable-multiarch --enable-multilib --enable-sysroot --enable-plugin --target=aarch64-elf
+../${JEV_GDB}/configure --prefix=${JEV_XTOOL_PREFIX} --enable-languages=c,c++ --enable-multilib --enable-sysroot --enable-plugin --target=arm-none-eabi
 make -j${NUMJOBS} all
 make -j${NUMJOBS} install
 popd
