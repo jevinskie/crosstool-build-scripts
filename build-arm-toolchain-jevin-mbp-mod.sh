@@ -23,10 +23,10 @@ JEV_XTOOL_PREFIX=/opt/arm/arm-none-eabi-gcc-11-git-lto
 
 BROOT=`brew --prefix`
 
-# brew install zlib libusb libusb-compat zstd xz libftdi gettext boost source-highlight libedit expat ncurses libelf expat
+# brew install zlib libusb libusb-compat zstd xz libftdi gettext boost source-highlight libedit expat ncurses libelf expat gmp isl libmpc mpfr
 
 export PATH=${JEV_XTOOL_PREFIX}/bin:${PATH}
-export PKG_CONFIG_PATH=${JEV_XTOOL_PREFIX}/lib/pkgconfig:${PKG_CONFIG_PATH:-}:${BROOT}/opt/gmp/lib/pkgconfig:${BROOT}/opt/isl/lib/pkgconfig:${BROOT}/opt/libmpc/lib/pkgconfig:${BROOT}/opt/mpfr/lib/pkgconfig:${BROOT}/opt/zlib/lib/pkgconfig:${BROOT}/opt/libusb/lib/pkgconfig:${BROOT}/opt/libusb-compat/lib/pkgconfig:${BROOT}/opt/zstd/lib/pkgconfig:${BROOT}/opt/xz/lib/pkgconfig:${BROOT}/opt/libftdi/lib/pkgconfig:${BROOT}/opt/gettext/lib/pkgconfig:${BROOT}/opt/boost/lib/pkgconfig:${BROOT}/opt/source-highlight/lib/pkgconfig:${BROOT}/opt/libedit/lib/pkgconfig:${BROOT}/opt/expat/lib/pkgconfig:${BROOT}/opt/ncurses/lib/pkgconfig:${BROOT}/opt/libelf/lib/pkgconfig:${BROOT}/opt/expat/lib/pkgconfig:${BROOT}/lib/pkgconfig
+export PKG_CONFIG_PATH=${JEV_XTOOL_PREFIX}/lib/pkgconfig:${PKG_CONFIG_PATH:-}:${BROOT}/opt/gmp/lib/pkgconfig:${BROOT}/opt/isl/lib/pkgconfig:${BROOT}/opt/libmpc/lib/pkgconfig:${BROOT}/opt/mpfr/lib/pkgconfig:${BROOT}/opt/zlib/lib/pkgconfig:${BROOT}/opt/libusb/lib/pkgconfig:${BROOT}/opt/libusb-compat/lib/pkgconfig:${BROOT}/opt/zstd/lib/pkgconfig:${BROOT}/opt/xz/lib/pkgconfig:${BROOT}/opt/libftdi/lib/pkgconfig:${BROOT}/opt/gettext/lib/pkgconfig:${BROOT}/opt/boost/lib/pkgconfig:${BROOT}/opt/source-highlight/lib/pkgconfig:${BROOT}/opt/libedit/lib/pkgconfig:${BROOT}/opt/expat/lib/pkgconfig:${BROOT}/opt/ncurses/lib/pkgconfig:${BROOT}/opt/libelf/lib/pkgconfig:${BROOT}/opt/expat/lib/pkgconfig:${BROOT}/opt/xxhash/lib/pkgconfig:${BROOT}/lib/pkgconfig
 export LDFLAGS=-L${JEV_XTOOL_PREFIX}/lib
 export CPPFLAGS=-I${JEV_XTOOL_PREFIX}/include
 export CFLAGS=${CPPFLAGS}

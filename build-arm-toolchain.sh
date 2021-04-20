@@ -16,14 +16,16 @@ JEV_GCC=gcc-git
 # JEV_NEWLIB=newlib-4.1.0
 JEV_NEWLIB=newlib-git
 JEV_BINUTILS=binutils-2.36.1
-JEV_GDB=gdb-10.1
+# JEV_GDB=gdb-10.1
+# JEV_GDB=gdb-git
+JEV_GDB=binutils-gdb-git
 JEV_ISL=isl-0.23
 
 JEV_XTOOL_PREFIX=/opt/arm/arm-none-eabi-gcc-11-git-lto
 
 BROOT=`brew --prefix`
 
-# brew install zlib libusb libusb-compat zstd xz libftdi gettext boost source-highlight libedit expat ncurses libelf expat
+# brew install zlib libusb libusb-compat zstd xz libftdi gettext boost source-highlight libedit expat ncurses libelf expat xxhash
 
 export PATH=${JEV_XTOOL_PREFIX}/bin:${PATH}
 export PKG_CONFIG_PATH=${JEV_XTOOL_PREFIX}/lib/pkgconfig:${PKG_CONFIG_PATH:-}:${BROOT}/opt/zlib/lib/pkgconfig:${BROOT}/opt/libusb/lib/pkgconfig:${BROOT}/opt/libusb-compat/lib/pkgconfig:${BROOT}/opt/zstd/lib/pkgconfig:${BROOT}/opt/xz/lib/pkgconfig:${BROOT}/opt/libftdi/lib/pkgconfig:${BROOT}/opt/gettext/lib/pkgconfig:${BROOT}/opt/boost/lib/pkgconfig:${BROOT}/opt/source-highlight/lib/pkgconfig:${BROOT}/opt/libedit/lib/pkgconfig:${BROOT}/opt/expat/lib/pkgconfig:${BROOT}/opt/ncurses/lib/pkgconfig:${BROOT}/opt/libelf/lib/pkgconfig:${BROOT}/opt/expat/lib/pkgconfig:${BROOT}/lib/pkgconfig
@@ -125,33 +127,38 @@ mkdir -p ${JEV_XTOOL_PREFIX}
 # popd
 
 # newlib-nano build
-mkdir -p build-newlib-nano
-pushd build-newlib-nano
-../${JEV_NEWLIB}/configure --prefix=$PWD/target-libs --disable-nls --disable-newlib-supplied-syscalls --enable-newlib-reent-check-verify --enable-newlib-reent-small --enable-newlib-retargetable-locking --disable-newlib-fvwrite-in-streamio --disable-newlib-fseek-optimization --disable-newlib-wide-orient --enable-newlib-nano-malloc --disable-newlib-unbuf-stream-opt --enable-lite-exit --enable-newlib-global-atexit --enable-newlib-nano-formatted-io --target=arm-none-eabi
-make -j${NUMJOBS} all
-make install
-popd
+# mkdir -p build-newlib-nano
+# pushd build-newlib-nano
+# ../${JEV_NEWLIB}/configure --prefix=$PWD/target-libs --disable-nls --disable-newlib-supplied-syscalls --enable-newlib-reent-check-verify --enable-newlib-reent-small --enable-newlib-retargetable-locking --disable-newlib-fvwrite-in-streamio --disable-newlib-fseek-optimization --disable-newlib-wide-orient --enable-newlib-nano-malloc --disable-newlib-unbuf-stream-opt --enable-lite-exit --enable-newlib-global-atexit --enable-newlib-nano-formatted-io --target=arm-none-eabi
+# make -j${NUMJOBS} all
+# make install
+# popd
 
 # gcc final
-pushd build-gcc
-../${JEV_GCC}/configure --prefix=${JEV_XTOOL_PREFIX} --enable-languages=c,c++ --disable-nls --enable-multilib --enable-sysroot --enable-plugin --with-newlib --with-headers=yes --with-gnu-as --with-gnu-ld --target=arm-none-eabi --with-multilib-list=rmprofile
-make -j8 all INHIBIT_LIBC_CFLAGS="-DUSE_TM_CLONE_REGISTRY=0"
-make install
-popd
+# pushd build-gcc
+# ../${JEV_GCC}/configure --prefix=${JEV_XTOOL_PREFIX} --enable-languages=c,c++ --disable-nls --enable-multilib --enable-sysroot --enable-plugin --with-newlib --with-headers=yes --with-gnu-as --with-gnu-ld --target=arm-none-eabi --with-multilib-list=rmprofile
+# make -j8 all INHIBIT_LIBC_CFLAGS="-DUSE_TM_CLONE_REGISTRY=0"
+# make install
+# popd
 
 # copy newlib-nano
-mkdir -p ${JEV_XTOOL_PREFIX}/arm-none-eabi/include/newlib-nano
-cp -f build-newlib-nano/target-libs/arm-none-eabi/include/newlib.h \
-          ${JEV_XTOOL_PREFIX}/arm-none-eabi/include/newlib-nano/newlib.h
+# mkdir -p ${JEV_XTOOL_PREFIX}/arm-none-eabi/include/newlib-nano
+# cp -f build-newlib-nano/target-libs/arm-none-eabi/include/newlib.h \
+#           ${JEV_XTOOL_PREFIX}/arm-none-eabi/include/newlib-nano/newlib.h
 
 # gdb
-wget -N ${JEV_GNU_MIRROR}/gnu/gdb/${JEV_GDB}.tar.xz
-rm -rf ${JEV_GDB} build-gdb
-tar xf ${JEV_GDB}.tar.xz
+# wget -N ${JEV_GNU_MIRROR}/gnu/gdb/${JEV_GDB}.tar.xz
+# rm -rf ${JEV_GDB}
+rm -rf build-gdb
+# tar xf ${JEV_GDB}.tar.xz
+
+# pushd ${JEV_GDB}
+# patch -p 1 < ../gdb-bigsur-string-include.patch
+# popd
 
 mkdir -p build-gdb
 pushd build-gdb
-../${JEV_GDB}/configure --prefix=${JEV_XTOOL_PREFIX} --enable-languages=c,c++ --enable-multilib --enable-sysroot --enable-plugin --target=arm-none-eabi
+../${JEV_GDB}/configure --prefix=${JEV_XTOOL_PREFIX} --disable-binutils --disable-ld --disable-gold --disable-gas --disable-sim --disable-gprof --enable-werror=no --enable-languages=c,c++ --enable-multilib --enable-sysroot --enable-plugin --with-lzma=no --with-libexpat=yes --target=arm-none-eabi
 make -j${NUMJOBS} all
 make -j${NUMJOBS} install
 popd
