@@ -15,9 +15,9 @@ JEV_MPC=mpc-1.2.1
 JEV_GCC=gcc-git
 # JEV_NEWLIB=newlib-4.1.0
 JEV_NEWLIB=newlib-git
-JEV_BINUTILS=binutils-2.36.1
+# JEV_BINUTILS=binutils-2.36.1
+JEV_BINUTILS=binutils-gdb-git
 # JEV_GDB=gdb-10.1
-# JEV_GDB=gdb-git
 JEV_GDB=binutils-gdb-git
 JEV_ISL=isl-0.23
 
@@ -25,12 +25,17 @@ JEV_XTOOL_PREFIX=/opt/arm/arm-none-eabi-gcc-11-git-lto
 
 BROOT=`brew --prefix`
 
-# brew install zlib libusb libusb-compat zstd xz libftdi gettext boost source-highlight libedit expat ncurses libelf expat xxhash
+# brew install zlib libusb libusb-compat zstd xz libftdi gettext boost source-highlight libedit expat ncurses libelf expat xxhash tcl-tk
+
+# ->  % brew-pkgconfig-env xz:liblzma xxhash:libxxhash
+# export CPPFLAGS="-I/opt/homebrew/Cellar/xz/5.2.5/include -I/opt/homebrew/Cellar/xxhash/0.8.0/include "
+# export CFLAGS="-I/opt/homebrew/Cellar/xz/5.2.5/include -I/opt/homebrew/Cellar/xxhash/0.8.0/include "
+# export LDFLAGS="-L/opt/homebrew/Cellar/xz/5.2.5/lib -llzma -L/opt/homebrew/Cellar/xxhash/0.8.0/lib -lxxhash "
 
 export PATH=${JEV_XTOOL_PREFIX}/bin:${PATH}
-export PKG_CONFIG_PATH=${JEV_XTOOL_PREFIX}/lib/pkgconfig:${PKG_CONFIG_PATH:-}:${BROOT}/opt/zlib/lib/pkgconfig:${BROOT}/opt/libusb/lib/pkgconfig:${BROOT}/opt/libusb-compat/lib/pkgconfig:${BROOT}/opt/zstd/lib/pkgconfig:${BROOT}/opt/xz/lib/pkgconfig:${BROOT}/opt/libftdi/lib/pkgconfig:${BROOT}/opt/gettext/lib/pkgconfig:${BROOT}/opt/boost/lib/pkgconfig:${BROOT}/opt/source-highlight/lib/pkgconfig:${BROOT}/opt/libedit/lib/pkgconfig:${BROOT}/opt/expat/lib/pkgconfig:${BROOT}/opt/ncurses/lib/pkgconfig:${BROOT}/opt/libelf/lib/pkgconfig:${BROOT}/opt/expat/lib/pkgconfig:${BROOT}/lib/pkgconfig
-export LDFLAGS=-L${JEV_XTOOL_PREFIX}/lib
-export CPPFLAGS=-I${JEV_XTOOL_PREFIX}/include
+export PKG_CONFIG_PATH=${JEV_XTOOL_PREFIX}/lib/pkgconfig:${PKG_CONFIG_PATH:-}:${BROOT}/opt/zlib/lib/pkgconfig:${BROOT}/opt/libusb/lib/pkgconfig:${BROOT}/opt/libusb-compat/lib/pkgconfig:${BROOT}/opt/zstd/lib/pkgconfig:${BROOT}/opt/xz/lib/pkgconfig:${BROOT}/opt/libftdi/lib/pkgconfig:${BROOT}/opt/gettext/lib/pkgconfig:${BROOT}/opt/boost/lib/pkgconfig:${BROOT}/opt/source-highlight/lib/pkgconfig:${BROOT}/opt/libedit/lib/pkgconfig:${BROOT}/opt/expat/lib/pkgconfig:${BROOT}/opt/ncurses/lib/pkgconfig:${BROOT}/opt/libelf/lib/pkgconfig:${BROOT}/opt/expat/lib/pkgconfig:${BROOT}/opt/xxhash/lib/pkgconfig:${BROOT}/opt/tcl-tk/lib/pkgconfig:${BROOT}/lib/pkgconfig
+export LDFLAGS="-L${JEV_XTOOL_PREFIX}/lib -L${BROOT}/opt/xxhash/lib -L${BROOT}/opt/xz/lib"
+export CPPFLAGS="-I${JEV_XTOOL_PREFIX}/include -I${BROOT}/opt/xxhash/include -I${BROOT}/opt/xz/include"
 export CFLAGS=${CPPFLAGS}
 export CXXFLAGS=${CPPFLAGS}
 export LDFLAGS_FOR_TARGET="-flto -fuse-linker-plugin -ffat-lto-objects"
@@ -90,11 +95,11 @@ mkdir -p ${JEV_XTOOL_PREFIX}
 # binutils
 # wget -N ${JEV_GNU_MIRROR}/gnu/binutils/${JEV_BINUTILS}.tar.bz2
 # rm -rf build-binutils
-# rm -rf ${JEV_BINUTILS}
-# tar xf ${JEV_BINUTILS}.tar.bz2
+# # rm -rf ${JEV_BINUTILS}
+# # tar xf ${JEV_BINUTILS}.tar.bz2
 # mkdir -p build-binutils
 # pushd build-binutils
-# ../${JEV_BINUTILS}/configure --prefix=${JEV_XTOOL_PREFIX} --disable-nls --enable-sysroot --enable-plugin --enable-interwork --target=arm-none-eabi
+# ../${JEV_BINUTILS}/configure --prefix=${JEV_XTOOL_PREFIX} --disable-nls --enable-sysroot --enable-werror=no --disable-gdb --disable-gdbserver --disable-gdbsupport --enable-lto --enable-languages=c,c++,lto --enable-plugin --enable-interwork --with-lzma=auto --with-xxhash=auto --with-libexpat=yes --target=arm-none-eabi
 # make -j${NUMJOBS} all
 # make -j${NUMJOBS} install
 # popd
@@ -158,7 +163,7 @@ rm -rf build-gdb
 
 mkdir -p build-gdb
 pushd build-gdb
-../${JEV_GDB}/configure --prefix=${JEV_XTOOL_PREFIX} --disable-binutils --disable-ld --disable-gold --disable-gas --disable-sim --disable-gprof --enable-werror=no --enable-languages=c,c++ --enable-multilib --enable-sysroot --enable-plugin --with-lzma=no --with-libexpat=yes --target=arm-none-eabi
+../${JEV_GDB}/configure --prefix=${JEV_XTOOL_PREFIX} --enable-werror=no --disable-nls --disable-binutils --disable-ld --disable-gold --disable-gas --disable-gprof --enable-lto --enable-languages=c,c++,lto --enable-multilib --enable-sysroot --enable-plugin --enable-interwork --with-lzma=auto --with-xxhash=auto --with-libexpat=yes --target=arm-none-eabi
 make -j${NUMJOBS} all
 make -j${NUMJOBS} install
 popd
