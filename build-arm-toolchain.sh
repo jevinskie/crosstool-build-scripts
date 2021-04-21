@@ -99,7 +99,7 @@ mkdir -p ${JEV_XTOOL_PREFIX}
 # # tar xf ${JEV_BINUTILS}.tar.bz2
 # mkdir -p build-binutils
 # pushd build-binutils
-# ../${JEV_BINUTILS}/configure --prefix=${JEV_XTOOL_PREFIX} --disable-nls --enable-sysroot --enable-werror=no --disable-gdb --disable-gdbserver --disable-gdbsupport --enable-lto --enable-languages=c,c++,lto --enable-plugin --enable-interwork --with-lzma=auto --with-xxhash=auto --with-libexpat=yes --target=arm-none-eabi
+# ../${JEV_BINUTILS}/configure --prefix=${JEV_XTOOL_PREFIX} --disable-nls --enable-sysroot --enable-werror=no --enable-sim --disable-gdb --disable-gdbserver --disable-gdbsupport --enable-lto --enable-languages=c,c++,lto --enable-plugin --enable-interwork --with-lzma=yes --with-xxhash=yes --with-libexpat=yes --target=arm-none-eabi
 # make -j${NUMJOBS} all
 # make -j${NUMJOBS} install
 # popd
@@ -163,7 +163,8 @@ rm -rf build-gdb
 
 mkdir -p build-gdb
 pushd build-gdb
-../${JEV_GDB}/configure --prefix=${JEV_XTOOL_PREFIX} --enable-werror=no --disable-nls --disable-binutils --disable-ld --disable-gold --disable-gas --disable-gprof --enable-lto --enable-languages=c,c++,lto --enable-multilib --enable-sysroot --enable-plugin --enable-interwork --with-lzma=auto --with-xxhash=auto --with-libexpat=yes --target=arm-none-eabi
+# --with-tcl=${BROOT}/opt/tcl-tk/lib --with-tk=${BROOT}/opt/tcl-tk/lib 
+../${JEV_GDB}/configure --prefix=${JEV_XTOOL_PREFIX} --enable-werror=no --disable-nls --disable-binutils --disable-ld --disable-gold --disable-gas --disable-gprof --enable-sim --enable-gdbmi --enable-tui --enable-gdbtk --enable-source-highlight --enable-lto --enable-languages=c,c++,lto --enable-multilib --enable-sysroot --enable-plugin --enable-interwork --with-lzma=yes --with-xxhash=yes --with-libexpat=yes --target=arm-none-eabi
 make -j${NUMJOBS} all
 make -j${NUMJOBS} install
 popd
