@@ -15,10 +15,10 @@ JEV_MPC=mpc-1.2.1
 JEV_GCC=gcc-git
 JEV_NEWLIB=newlib-4.1.0
 JEV_BINUTILS=binutils-2.36.1
-JEV_GDB=gdb-10.1
-JEV_ISL=isl-0.23
+JEV_GDB=gdb-10.2
+JEV_ISL=isl-0.24
 
-JEV_XTOOL_PREFIX=/opt/aarch64/aarch64-elf-gcc-10.2-lto
+JEV_XTOOL_PREFIX=/opt/aarch64/aarch64-elf-gcc-12-git-lto
 
 BROOT=`brew --prefix`
 
@@ -86,7 +86,7 @@ rm -rf ${JEV_BINUTILS} build-binutils
 tar xf ${JEV_BINUTILS}.tar.bz2
 mkdir -p build-binutils
 pushd build-binutils
-../${JEV_BINUTILS}/configure --prefix=${JEV_XTOOL_PREFIX} --enable-languages=c,c++ --disable-nls --enable-multiarch --enable-sysroot --enable-plugin --target=aarch64-elf
+../${JEV_BINUTILS}/configure --prefix=${JEV_XTOOL_PREFIX} --enable-languages=c,c++ --disable-nls --enable-multiarch --enable-sysroot --enable-plugin --target=aarch64-none-elf
 make -j${NUMJOBS} all
 make -j${NUMJOBS} install
 popd
@@ -108,7 +108,7 @@ rm -rf build-gcc
 
 mkdir -p build-gcc
 pushd build-gcc
-../${JEV_GCC}/configure --prefix=${JEV_XTOOL_PREFIX} --enable-languages=c,c++ --disable-nls --enable-multiarch --enable-multilib --enable-sysroot --enable-plugin --target=aarch64-elf --without-headers --with-newlib --with-gnu-as --with-gnu-ld
+../${JEV_GCC}/configure --prefix=${JEV_XTOOL_PREFIX} --enable-languages=c,c++ --disable-nls --enable-multiarch --enable-multilib --enable-sysroot --enable-plugin --target=aarch64-none-elf --without-headers --with-newlib --with-gnu-as --with-gnu-ld
 make -j${NUMJOBS} all-gcc
 make install-gcc
 popd
@@ -116,14 +116,14 @@ popd
 # newlib build
 mkdir -p build-newlib
 pushd build-newlib
-../${JEV_NEWLIB}/configure --target=aarch64-elf --prefix=${JEV_XTOOL_PREFIX}
+../${JEV_NEWLIB}/configure --target=aarch64-none-elf --prefix=${JEV_XTOOL_PREFIX}
 make -j${NUMJOBS} all
 make install
 popd
 
 # gcc final
 pushd build-gcc
-../${JEV_GCC}/configure --prefix=${JEV_XTOOL_PREFIX} --enable-languages=c,c++ --disable-nls --enable-multiarch --enable-multilib --enable-sysroot --enable-plugin --target=aarch64-elf --with-newlib --with-gnu-as --with-gnu-ld
+../${JEV_GCC}/configure --prefix=${JEV_XTOOL_PREFIX} --enable-languages=c,c++ --disable-nls --enable-multiarch --enable-multilib --enable-sysroot --enable-plugin --target=aarch64-none-elf --with-newlib --with-gnu-as --with-gnu-ld
 make -j8 all
 make install
 popd
@@ -135,7 +135,7 @@ tar xf ${JEV_GDB}.tar.xz
 
 mkdir -p build-gdb
 pushd build-gdb
-../${JEV_GDB}/configure --prefix=${JEV_XTOOL_PREFIX} --enable-languages=c,c++ --enable-multiarch --enable-multilib --enable-sysroot --enable-plugin --target=aarch64-elf
+../${JEV_GDB}/configure --prefix=${JEV_XTOOL_PREFIX} --enable-languages=c,c++ --enable-multiarch --enable-multilib --enable-sysroot --enable-plugin --target=aarch64-none-elf
 make -j${NUMJOBS} all
 make -j${NUMJOBS} install
 popd
