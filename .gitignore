@@ -1,0 +1,13 @@
+*.tar.*
+build-*/
+*-git
+*-git/
+binutils-*/
+gdb-*/
+gcc-*/
+isl-*/
+mpc-*/
+mpfr-*/
+gmp-*/
+newlib-*/
+
