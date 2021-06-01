@@ -1,6 +1,7 @@
 *.tar.*
 build-*/
 binutils-*/
+binutils-git
 gcc-*/
 gcc-git
 gdb-*/
@@ -9,3 +10,5 @@ isl-*/
 mpc-*/
 mpfr-*/
 newlib-*/
+newlib-git
+
