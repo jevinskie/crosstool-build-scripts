@@ -42,7 +42,8 @@ export LDFLAGS="-L${JEV_XTOOL_PREFIX}/lib -Wl,-rpath,${JEV_XTOOL_PREFIX}/lib"
 export CPPFLAGS=-I${JEV_XTOOL_PREFIX}/include
 export CFLAGS="${CPPFLAGS} -Wno-error"
 export CXXFLAGS="${CPPFLAGS} -Wno-error"
-export LDFLAGS_FOR_TARGET="-flto -fuse-linker-plugin -ffat-lto-objects"
+# export LDFLAGS_FOR_TARGET="-flto -fuse-linker-plugin -ffat-lto-objects"
+export LDFLAGS_FOR_TARGET=""
 export CFLAGS_FOR_TARGET="${LDFLAGS_FOR_TARGET} -ggdb3 -ffunction-sections -fdata-sections"
 export LIBCFLAGS_FOR_TARGET=${CFLAGS_FOR_TARGET}
 export CXXFLAGS_FOR_TARGET=${CFLAGS_FOR_TARGET}
@@ -118,7 +119,7 @@ rm -rf build-gcc
 
 mkdir -p build-gcc
 pushd build-gcc
-../${JEV_GCC}/configure --prefix=${JEV_XTOOL_PREFIX} --enable-languages=c,c++ --disable-nls --enable-multiarch --enable-multilib --enable-sysroot --enable-plugin --target=arm-none-eabi --without-headers --with-newlib --with-gnu-as --with-gnu-ld
+../${JEV_GCC}/configure --prefix=${JEV_XTOOL_PREFIX} --enable-languages=c,c++ --disable-nls --enable-multiarch --enable-multilib --enable-sysroot --enable-plugin --target=arm-none-eabi --without-headers --with-newlib --with-gnu-as --with-gnu-ld --disable-libssp --with-multilib-list=rmprofile
 make -j${JEV_NUMJOBS} all-gcc
 make install-gcc
 popd
@@ -127,14 +128,14 @@ popd
 rm -rf build-newlib
 mkdir -p build-newlib
 pushd build-newlib
-../${JEV_NEWLIB}/configure --target=arm-none-eabi --prefix=${JEV_XTOOL_PREFIX}
+../${JEV_NEWLIB}/configure --target=arm-none-eabi --prefix=${JEV_XTOOL_PREFIX} --enable-newlib-io-long-long --enable-newlib-register-fini --disable-newlib-supplied-syscalls
 make -j${JEV_NUMJOBS} all
 make install
 popd
 
 # gcc final
 pushd build-gcc
-../${JEV_GCC}/configure --prefix=${JEV_XTOOL_PREFIX} --enable-languages=c,c++ --disable-nls --enable-multiarch --enable-multilib --enable-sysroot --enable-plugin --target=arm-none-eabi --with-newlib --with-gnu-as --with-gnu-ld
+../${JEV_GCC}/configure --prefix=${JEV_XTOOL_PREFIX} --enable-languages=c,c++ --disable-nls --enable-multiarch --enable-multilib --enable-sysroot --enable-plugin --target=arm-none-eabi --with-newlib --with-gnu-as --with-gnu-ld --disable-libssp --with-multilib-list=rmprofile
 make -j${JEV_NUMJOBS} all
 make install
 popd
