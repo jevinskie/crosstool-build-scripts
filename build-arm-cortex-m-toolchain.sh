@@ -100,7 +100,7 @@ rm -rf build-binutils
 # tar xf ${JEV_BINUTILS}.tar.bz2
 mkdir -p build-binutils
 pushd build-binutils
-../${JEV_BINUTILS}/configure --prefix=${JEV_XTOOL_PREFIX} --enable-languages=c,c++ --disable-nls --enable-multiarch --enable-sysroot --enable-plugin --with-python=python3 --enable-interwork --enable-multilib --target=arm-none-eabi
+../${JEV_BINUTILS}/configure --prefix=${JEV_XTOOL_PREFIX} --enable-languages=c,c++ --disable-nls --enable-multiarch --enable-sysroot --enable-plugin --with-python=python3 --enable-interwork --target=arm-none-eabi --disable-multilib
 make -j${JEV_NUMJOBS} all
 make -j${JEV_NUMJOBS} install
 popd
@@ -119,7 +119,7 @@ rm -rf build-gcc
 
 mkdir -p build-gcc
 pushd build-gcc
-../${JEV_GCC}/configure --prefix=${JEV_XTOOL_PREFIX} --enable-languages=c,c++ --disable-nls --enable-multiarch --enable-multilib --enable-sysroot --enable-plugin --target=arm-none-eabi --without-headers --with-newlib --with-gnu-as --with-gnu-ld --disable-libssp --with-multilib-list=rmprofile
+../${JEV_GCC}/configure --prefix=${JEV_XTOOL_PREFIX} --enable-languages=c,c++ --disable-nls --enable-multiarch --enable-sysroot --enable-plugin --target=arm-none-eabi --without-headers --with-newlib --with-gnu-as --with-gnu-ld --disable-libssp --disable-multilib -with-arch=armv7e-m+fpv5+fp.dp --with-float=hard
 make -j${JEV_NUMJOBS} all-gcc
 make install-gcc
 popd
@@ -128,14 +128,14 @@ popd
 rm -rf build-newlib
 mkdir -p build-newlib
 pushd build-newlib
-../${JEV_NEWLIB}/configure --target=arm-none-eabi --prefix=${JEV_XTOOL_PREFIX} --enable-newlib-io-long-long --enable-newlib-register-fini --disable-newlib-supplied-syscalls
+../${JEV_NEWLIB}/configure --target=arm-none-eabi --prefix=${JEV_XTOOL_PREFIX} --enable-newlib-io-long-long --enable-newlib-register-fini --disable-newlib-supplied-syscalls --with-arch=armv7e-m+fpv5+fp.dp --with-float=hard
 make -j${JEV_NUMJOBS} all
 make install
 popd
 
 # gcc final
 pushd build-gcc
-../${JEV_GCC}/configure --prefix=${JEV_XTOOL_PREFIX} --enable-languages=c,c++ --disable-nls --enable-multiarch --enable-multilib --enable-sysroot --enable-plugin --target=arm-none-eabi --with-newlib --with-gnu-as --with-gnu-ld --disable-libssp --with-multilib-list=rmprofile
+../${JEV_GCC}/configure --prefix=${JEV_XTOOL_PREFIX} --enable-languages=c,c++ --disable-nls --enable-multiarch --enable-sysroot --enable-plugin --target=arm-none-eabi --with-newlib --with-gnu-as --with-gnu-ld --disable-libssp --disable-multilib --with-arch=armv7e-m+fpv5+fp.dp --with-float=hard
 make -j${JEV_NUMJOBS} all
 make install
 popd
@@ -146,7 +146,7 @@ rm -rf build-binutils
 # tar xf ${JEV_BINUTILS}.tar.bz2
 mkdir -p build-binutils
 pushd build-binutils
-../${JEV_BINUTILS}/configure --prefix=${JEV_XTOOL_PREFIX} --enable-languages=c,c++ --disable-nls --enable-multiarch --enable-sysroot --enable-plugin --enable-targets=all --with-python=python3 --enable-interwork --enable-multilib --enable-gold --program-prefix=arm-none-eabi-
+../${JEV_BINUTILS}/configure --prefix=${JEV_XTOOL_PREFIX} --enable-languages=c,c++ --disable-nls --enable-multiarch --enable-sysroot --enable-plugin --enable-targets=all --with-python=python3 --enable-interwork --enable-gold --program-prefix=arm-none-eabi-
 make -j${JEV_NUMJOBS} all
 make -j${JEV_NUMJOBS} install
 popd
@@ -162,7 +162,7 @@ popd
 
 # mkdir -p build-gdb
 # pushd build-gdb
-# ../${JEV_GDB}/configure --prefix=${JEV_XTOOL_PREFIX} --enable-languages=c,c++ --enable-multiarch --enable-multilib --enable-sysroot --enable-plugin --target=arm-none-eabi
+# ../${JEV_GDB}/configure --prefix=${JEV_XTOOL_PREFIX} --enable-languages=c,c++ --enable-multiarch --enable-sysroot --enable-plugin --target=arm-none-eabi
 # make -j${JEV_NUMJOBS} all
 # make -j${JEV_NUMJOBS} install
 # popd
