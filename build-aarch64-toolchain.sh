@@ -49,6 +49,11 @@ JEV_GNU_MIRROR=https://ftp.gnu.org
 
 mkdir -p ${JEV_XTOOL_PREFIX}
 
+if [[ ! -z ${USE_ZSH+x} ]]; then
+	${SHELL}
+	exit
+fi
+
 # gmp
 # wget -N ${JEV_GNU_MIRROR}/gnu/gmp/${JEV_GMP}.tar.xz
 # rm -rf ${JEV_GMP} build-gmp
@@ -97,41 +102,42 @@ mkdir -p ${JEV_XTOOL_PREFIX}
 # # tar xf ${JEV_BINUTILS}.tar.bz2
 # mkdir -p build-binutils
 # pushd build-binutils
-# ../${JEV_BINUTILS}/configure --prefix=${JEV_XTOOL_PREFIX} --enable-languages=c,c++ --disable-nls --enable-multiarch --enable-sysroot --enable-sysroot --enable-plugin --target=aarch64-linux-gnu
+# ../${JEV_BINUTILS}/configure --prefix=${JEV_XTOOL_PREFIX} --enable-languages=c,c++ --disable-nls --enable-multiarch --enable-sysroot --enable-sysroot --enable-plugin --target=aarch64-none-elf
 # make -j${NUMJOBS} all
 # make -j${NUMJOBS} install
 # popd
 
-# # newlib unpack
+# newlib unpack
 # # wget -N http://sourceware.org/pub/newlib/${JEV_NEWLIB}.tar.gz
 # # rm -rf ${JEV_NEWLIB}
 # # tar xf ${JEV_NEWLIB}.tar.gz
 rm -rf build-newlib
 
-# # gcc
+# gcc
 # # wget -N ${JEV_GNU_MIRROR}/gnu/gcc/${JEV_GCC}/${JEV_GCC}.tar.xz
 # # rm -rf ${JEV_GCC} build-gcc
 # # tar xf ${JEV_GCC}.tar.xz
-rm -rf build-gcc
+# rm -rf build-gcc
 
-mkdir -p build-gcc
-pushd build-gcc
-../${JEV_GCC}/configure --prefix=${JEV_XTOOL_PREFIX} --with-mpc=${JEV_XTOOL_PREFIX} --with-mpfr=${JEV_XTOOL_PREFIX} --with-gmp=${JEV_XTOOL_PREFIX} --with-isl=${JEV_XTOOL_PREFIX} --disable-gcov --enable-languages=c,c++ --disable-nls --enable-multiarch --enable-sysroot --enable-sysroot --enable-plugin --target=aarch64-linux-gnu --without-headers --with-newlib --with-gnu-as --with-gnu-ld
-make -j${NUMJOBS} all-host
-make install-host
-popd
+# mkdir -p build-gcc
+# pushd build-gcc
+# ../${JEV_GCC}/configure --prefix=${JEV_XTOOL_PREFIX} --with-mpc=${JEV_XTOOL_PREFIX} --with-mpfr=${JEV_XTOOL_PREFIX} --with-gmp=${JEV_XTOOL_PREFIX} --with-isl=${JEV_XTOOL_PREFIX} --disable-gcov --enable-languages=c,c++ --disable-nls --enable-multiarch --enable-sysroot --enable-sysroot --enable-plugin --target=aarch64-none-elf --without-headers --with-newlib --with-gnu-as --with-gnu-ld
+# make -j${NUMJOBS} all-gcc
+# make install-gcc
+# popd
 
-# # newlib build
+# newlib build
 mkdir -p build-newlib
 pushd build-newlib
-../${JEV_NEWLIB}/configure --target=aarch64-linux-gnu --prefix=${JEV_XTOOL_PREFIX}
+../${JEV_NEWLIB}/configure --target=aarch64-none-elf --prefix=${JEV_XTOOL_PREFIX}
 make -j${NUMJOBS} all
 make install
 popd
 
 # # gcc final
 pushd build-gcc
-../${JEV_GCC}/configure --prefix=${JEV_XTOOL_PREFIX} --with-mpc=${JEV_XTOOL_PREFIX} --with-mpfr=${JEV_XTOOL_PREFIX} --with-gmp=${JEV_XTOOL_PREFIX} --with-isl=${JEV_XTOOL_PREFIX} --disable-gcov --enable-languages=c,c++ --disable-nls --enable-multiarch --enable-sysroot --enable-sysroot --enable-plugin --target=aarch64-linux-gnu --with-newlib --with-gnu-as --with-gnu-ld
+# might be possible to remove --disable-gcov (added to avoid #include <pthread.h> error before newlib install stage)
+../${JEV_GCC}/configure --prefix=${JEV_XTOOL_PREFIX} --with-mpc=${JEV_XTOOL_PREFIX} --with-mpfr=${JEV_XTOOL_PREFIX} --with-gmp=${JEV_XTOOL_PREFIX} --with-isl=${JEV_XTOOL_PREFIX} --disable-gcov --enable-languages=c,c++ --disable-nls --enable-multiarch --enable-sysroot --enable-plugin --target=aarch64-none-elf --with-newlib --with-gnu-as --with-gnu-ld
 make -j8 all
 make install
 popd
@@ -146,7 +152,7 @@ popd
 
 # mkdir -p build-gdb
 # pushd build-gdb
-# ../${JEV_GDB}/configure --prefix=${JEV_XTOOL_PREFIX} --enable-languages=c,c++ --enable-multiarch --enable-multilib --enable-sysroot --enable-plugin --target=aarch64-linux-gnu --enable-targets=all
+# ../${JEV_GDB}/configure --prefix=${JEV_XTOOL_PREFIX} --enable-languages=c,c++ --enable-multiarch --enable-multilib --enable-sysroot --enable-plugin --target=aarch64-none-elf --enable-targets=all
 # make -j${NUMJOBS} all
 # make -j${NUMJOBS} install
 # popd
