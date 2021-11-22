@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 set -o errexit
 set -o nounset
@@ -19,6 +19,7 @@ JEV_NEWLIB=newlib-git
 JEV_BINUTILS=binutils-git
 # JEV_GDB=gdb-10.2
 JEV_GDB=binutils-git/gdb
+# stupid site is down
 JEV_ISL=isl-0.24
 
 JEV_XTOOL_PREFIX=/opt/aarch64/aarch64-elf-gcc-12-git-lto-2021-05-31
@@ -48,104 +49,105 @@ JEV_GNU_MIRROR=https://ftp.gnu.org
 
 mkdir -p ${JEV_XTOOL_PREFIX}
 
-# # gmp
-# wget -N ${JEV_GNU_MIRROR}/gnu/gmp/${JEV_GMP}.tar.xz
-# rm -rf ${JEV_GMP} build-gmp
-# tar xf ${JEV_GMP}.tar.xz
-# mkdir -p build-gmp
-# pushd build-gmp
-# ../${JEV_GMP}/configure --prefix=${JEV_XTOOL_PREFIX}
-# make -j${NUMJOBS} install
-# popd
+# gmp
+wget -N ${JEV_GNU_MIRROR}/gnu/gmp/${JEV_GMP}.tar.xz
+rm -rf ${JEV_GMP} build-gmp
+tar xf ${JEV_GMP}.tar.xz
+mkdir -p build-gmp
+pushd build-gmp
+../${JEV_GMP}/configure --prefix=${JEV_XTOOL_PREFIX}
+make -j${NUMJOBS} install
+popd
 
-# # mpfr
-# wget -N ${JEV_GNU_MIRROR}/gnu/mpfr/${JEV_MPFR}.tar.xz
-# rm -rf ${JEV_MPFR} build-mpfr
-# tar xf ${JEV_MPFR}.tar.xz
-# mkdir -p build-mpfr
-# pushd build-mpfr
-# ../${JEV_MPFR}/configure --prefix=${JEV_XTOOL_PREFIX}
-# make -j${NUMJOBS} install
-# popd
+# mpfr
+wget -N ${JEV_GNU_MIRROR}/gnu/mpfr/${JEV_MPFR}.tar.xz
+rm -rf ${JEV_MPFR} build-mpfr
+tar xf ${JEV_MPFR}.tar.xz
+mkdir -p build-mpfr
+pushd build-mpfr
+../${JEV_MPFR}/configure --prefix=${JEV_XTOOL_PREFIX}
+make -j${NUMJOBS} install
+popd
 
-# # mpc
-# wget -N ${JEV_GNU_MIRROR}/gnu/mpc/${JEV_MPC}.tar.gz
-# rm -rf ${JEV_MPC} build-mpc
-# tar xf ${JEV_MPC}.tar.gz
-# mkdir -p build-mpc
-# pushd build-mpc
-# ../${JEV_MPC}/configure --prefix=${JEV_XTOOL_PREFIX}
-# make -j${NUMJOBS} install
-# popd
+# mpc
+wget -N ${JEV_GNU_MIRROR}/gnu/mpc/${JEV_MPC}.tar.gz
+rm -rf ${JEV_MPC} build-mpc
+tar xf ${JEV_MPC}.tar.gz
+mkdir -p build-mpc
+pushd build-mpc
+../${JEV_MPC}/configure --prefix=${JEV_XTOOL_PREFIX}
+make -j${NUMJOBS} install
+popd
 
-# # isl
+# isl
+rm -rf  build-isl
 # wget -N http://isl.gforge.inria.fr/${JEV_ISL}.tar.xz
-# rm -rf ${JEV_ISL} build-isl
-# tar xf ${JEV_ISL}.tar.xz
-# mkdir -p build-isl
-# pushd build-isl
-# ../${JEV_ISL}/configure --prefix=${JEV_XTOOL_PREFIX}
-# make -j${NUMJOBS} install
-# popd
+rm -rf ${JEV_ISL}
+tar xf ${JEV_ISL}.tar.xz
+mkdir -p build-isl
+pushd build-isl
+../${JEV_ISL}/configure --prefix=${JEV_XTOOL_PREFIX}
+make -j${NUMJOBS} install
+popd
 
-# # binutils
-# # wget -N ${JEV_GNU_MIRROR}/gnu/binutils/${JEV_BINUTILS}.tar.bz2
-# # rm -rf ${JEV_BINUTILS}
-# rm -rf build-binutils
-# # tar xf ${JEV_BINUTILS}.tar.bz2
-# mkdir -p build-binutils
-# pushd build-binutils
-# ../${JEV_BINUTILS}/configure --prefix=${JEV_XTOOL_PREFIX} --enable-languages=c,c++ --disable-nls --enable-multiarch --enable-sysroot --enable-plugin --target=aarch64-none-elf
-# make -j${NUMJOBS} all
-# make -j${NUMJOBS} install
-# popd
+# binutils
+rm -rf build-binutils
+# wget -N ${JEV_GNU_MIRROR}/gnu/binutils/${JEV_BINUTILS}.tar.bz2
+# rm -rf ${JEV_BINUTILS}
+# tar xf ${JEV_BINUTILS}.tar.bz2
+mkdir -p build-binutils
+pushd build-binutils
+../${JEV_BINUTILS}/configure --prefix=${JEV_XTOOL_PREFIX} --enable-languages=c,c++ --disable-nls --enable-multiarch --enable-sysroot --enable-sysroot --enable-plugin --target=aarch64-linux-gnu
+make -j${NUMJOBS} all
+make -j${NUMJOBS} install
+popd
 
 # # newlib unpack
 # # wget -N http://sourceware.org/pub/newlib/${JEV_NEWLIB}.tar.gz
 # # rm -rf ${JEV_NEWLIB}
-# rm -rf build-newlib
 # # tar xf ${JEV_NEWLIB}.tar.gz
+rm -rf build-newlib
 
 # # gcc
 # # wget -N ${JEV_GNU_MIRROR}/gnu/gcc/${JEV_GCC}/${JEV_GCC}.tar.xz
 # # rm -rf ${JEV_GCC} build-gcc
 # # tar xf ${JEV_GCC}.tar.xz
-# rm -rf build-gcc
+rm -rf build-gcc
 
-# mkdir -p build-gcc
-# pushd build-gcc
-# ../${JEV_GCC}/configure --prefix=${JEV_XTOOL_PREFIX} --enable-languages=c,c++ --disable-nls --enable-multiarch --enable-multilib --enable-sysroot --enable-plugin --target=aarch64-none-elf --without-headers --with-newlib --with-gnu-as --with-gnu-ld
-# make -j${NUMJOBS} all-gcc
-# make install-gcc
-# popd
+mkdir -p build-gcc
+pushd build-gcc
+../${JEV_GCC}/configure --prefix=${JEV_XTOOL_PREFIX} --enable-languages=c,c++ --disable-nls --enable-multiarch --enable-sysroot --enable-sysroot --enable-plugin --target=aarch64-linux-gnu --without-headers --with-newlib --with-gnu-as --with-gnu-ld
+make -j${NUMJOBS} all-host
+make install-host
+popd
 
 # # newlib build
-# mkdir -p build-newlib
-# pushd build-newlib
-# ../${JEV_NEWLIB}/configure --target=aarch64-none-elf --prefix=${JEV_XTOOL_PREFIX}
-# make -j${NUMJOBS} all
-# make install
-# popd
+mkdir -p build-newlib
+pushd build-newlib
+../${JEV_NEWLIB}/configure --target=aarch64-linux-gnu --prefix=${JEV_XTOOL_PREFIX}
+make -j${NUMJOBS} all
+make install
+popd
 
 # # gcc final
-# pushd build-gcc
-# ../${JEV_GCC}/configure --prefix=${JEV_XTOOL_PREFIX} --enable-languages=c,c++ --disable-nls --enable-multiarch --enable-multilib --enable-sysroot --enable-plugin --target=aarch64-none-elf --with-newlib --with-gnu-as --with-gnu-ld
-# make -j8 all
-# make install
-# popd
+pushd build-gcc
+../${JEV_GCC}/configure --prefix=${JEV_XTOOL_PREFIX} --enable-languages=c,c++ --disable-nls --enable-multiarch --enable-sysroot --enable-sysroot --enable-plugin --target=aarch64-linux-gnu --with-newlib --with-gnu-as --with-gnu-ld
+make -j8 all
+make install
+popd
 
 # gdb
 # handled by binutils-git
 
 # # wget -N ${JEV_GNU_MIRROR}/gnu/gdb/${JEV_GDB}.tar.xz
 # # rm -rf ${JEV_GDB}
-rm -rf build-gdb
+# rm -rf build-gdb
 # # tar xf ${JEV_GDB}.tar.xz
 
-mkdir -p build-gdb
-pushd build-gdb
-../${JEV_GDB}/configure --prefix=${JEV_XTOOL_PREFIX} --enable-languages=c,c++ --enable-multiarch --enable-multilib --enable-sysroot --enable-plugin --target=aarch64-none-elf --enable-targets=all
-make -j${NUMJOBS} all
+# mkdir -p build-gdb
+# pushd build-gdb
+# ../${JEV_GDB}/configure --prefix=${JEV_XTOOL_PREFIX} --enable-languages=c,c++ --enable-multiarch --enable-multilib --enable-sysroot --enable-plugin --target=aarch64-linux-gnu --enable-targets=all
+# make -j${NUMJOBS} all
 # make -j${NUMJOBS} install
-popd
+# popd
 
