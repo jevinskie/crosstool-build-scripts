@@ -102,7 +102,7 @@ rm -rf build-binutils
 # tar xf ${JEV_BINUTILS}.tar.bz2
 mkdir -p build-binutils
 pushd build-binutils
-../${JEV_BINUTILS}/configure --prefix=${JEV_XTOOL_PREFIX} --enable-languages=c,c++ --disable-nls --disable-multiarch --enable-sysroot --enable-plugin --target=aarch64-none-elf
+../${JEV_BINUTILS}/configure --prefix=${JEV_XTOOL_PREFIX} --enable-languages=c,c++ --disable-nls --disable-multiarch --enable-sysroot --enable-plugin --target=aarch64-none-elf --with-python=/opt/homebrew/opt/python3/bin/python3
 make -j${NUMJOBS} all
 make -j${NUMJOBS} install
 popd
