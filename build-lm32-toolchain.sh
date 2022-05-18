@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 set -o errexit
 set -o nounset
@@ -6,11 +6,12 @@ set -o pipefail
 
 set -o xtrace
 
-NUMJOBS=16
+NUMJOBS=24
 
 JEV_GMP=gmp-6.2.1
 JEV_MPFR=mpfr-4.1.0
 JEV_MPC=mpc-1.2.1
+JEV_ISL=isl-0.24
 # JEV_GCC=gcc-11.1.0
 JEV_GCC=gcc-git
 # JEV_NEWLIB=newlib-4.1.0
@@ -19,9 +20,13 @@ JEV_NEWLIB=newlib-git
 JEV_BINUTILS=binutils-git
 # JEV_GDB=gdb-10.2
 JEV_GDB=gdb-git
-JEV_ISL=isl-0.24
 
-JEV_XTOOL_PREFIX=/opt/lm32/lm32-elf-gcc-git-2021-05-30
+ln -s -f ~/code/gcc/git/gcc gcc-git
+ln -s -f ~/code/libc/newlib/git/newlib newlib-git
+ln -s -f ~/code/linkers/binutils/git/binutils-gdb binutils-git
+ln -s -f ~/code/linkers/binutils/git/binutils-gdb/gdb gdb-git
+
+JEV_XTOOL_PREFIX=/opt/lm32/lm32-elf-gcc-git-2022-05-18
 unset GREP_OPTIONS
 
 # BROOT=`brew --prefix`
@@ -110,7 +115,6 @@ rm -rf build-newlib
 # rm -rf ${JEV_GCC}
 rm -rf build-gcc
 # tar xf ${JEV_GCC}.tar.xz
-rm -rf build-gcc
 
 mkdir -p build-gcc
 pushd build-gcc
@@ -130,20 +134,20 @@ popd
 # gcc final
 pushd build-gcc
 ../${JEV_GCC}/configure --prefix=${JEV_XTOOL_PREFIX} --enable-languages=c,c++ --disable-nls --enable-sysroot --enable-plugin --target=lm32-elf --with-newlib --with-gnu-as --with-gnu-ld
-make -j8 all
+make -j${NUMJOBS} all
 make install
 popd
 
 # gdb
-# wget -N ${JEV_GNU_MIRROR}/gnu/gdb/${JEV_GDB}.tar.xz
-# rm -rf ${JEV_GDB}
-rm -rf build-gdb
-# tar xf ${JEV_GDB}.tar.xz
+# # wget -N ${JEV_GNU_MIRROR}/gnu/gdb/${JEV_GDB}.tar.xz
+# # rm -rf ${JEV_GDB}
+# rm -rf build-gdb
+# # tar xf ${JEV_GDB}.tar.xz
 
-mkdir -p build-gdb
-pushd build-gdb
-../${JEV_GDB}/configure --prefix=${JEV_XTOOL_PREFIX} --enable-languages=c,c++ --enable-sysroot --enable-plugin --target=lm32-elf
-make -j${NUMJOBS} all
-make -j${NUMJOBS} install
-popd
+# mkdir -p build-gdb
+# pushd build-gdb
+# ../${JEV_GDB}/configure --prefix=${JEV_XTOOL_PREFIX} --enable-languages=c,c++ --enable-sysroot --enable-plugin --target=lm32-elf
+# make -j${NUMJOBS} all
+# make -j${NUMJOBS} install
+# popd
 
