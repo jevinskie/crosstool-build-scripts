@@ -12,6 +12,7 @@ JEV_GMP=gmp-6.2.1
 JEV_MPFR=mpfr-4.1.0
 JEV_MPC=mpc-1.2.1
 JEV_ISL=isl-0.24
+JEV_PYTHON=Python-3.10.4
 # JEV_GCC=gcc-11.1.0
 JEV_GCC=gcc-git
 # JEV_NEWLIB=newlib-4.1.0
@@ -21,10 +22,10 @@ JEV_BINUTILS=binutils-git
 # JEV_GDB=gdb-10.2
 JEV_GDB=gdb-git
 
-ln -s -f ~/code/gcc/git/gcc gcc-git
-ln -s -f ~/code/libc/newlib/git/newlib newlib-git
-ln -s -f ~/code/linkers/binutils/git/binutils-gdb binutils-git
-ln -s -f ~/code/linkers/binutils/git/binutils-gdb/gdb gdb-git
+# ln -s ~/code/gcc/git/gcc gcc-git
+# ln -s ~/code/libc/newlib/git/newlib newlib-git
+# ln -s ~/code/linkers/binutils/git/binutils-gdb binutils-git
+# ln -s ~/code/linkers/binutils/git/binutils-gdb/gdb gdb-git
 
 JEV_XTOOL_PREFIX=/opt/lm32/lm32-elf-gcc-git-2022-05-18
 unset GREP_OPTIONS
@@ -35,21 +36,24 @@ unset GREP_OPTIONS
 
 export PATH=${JEV_XTOOL_PREFIX}/bin:${PATH}
 # export PKG_CONFIG_PATH=${JEV_XTOOL_PREFIX}/lib/pkgconfig:${PKG_CONFIG_PATH:-}:${BROOT}/opt/zlib/lib/pkgconfig:${BROOT}/opt/libusb/lib/pkgconfig:${BROOT}/opt/libusb-compat/lib/pkgconfig:${BROOT}/opt/zstd/lib/pkgconfig:${BROOT}/opt/xz/lib/pkgconfig:${BROOT}/opt/libftdi/lib/pkgconfig:${BROOT}/opt/gettext/lib/pkgconfig:${BROOT}/opt/boost/lib/pkgconfig:${BROOT}/opt/source-highlight/lib/pkgconfig:${BROOT}/opt/libedit/lib/pkgconfig:${BROOT}/opt/expat/lib/pkgconfig:${BROOT}/opt/ncurses/lib/pkgconfig:${BROOT}/lib/pkgconfig
-export LDFLAGS="-L${JEV_XTOOL_PREFIX}/lib -Wl,-rpath,${JEV_XTOOL_PREFIX}/lib"
+export LDFLAGS_SHARED="-L${JEV_XTOOL_PREFIX}/lib -Wl,-rpath,${JEV_XTOOL_PREFIX}/lib"
+export LDFLAGS_SHARED="${LDFLAGS_SHARED} -static-libgcc -static-libstdc++"
+export LDFLAGS="${LDFLAGS_SHARED} -static"
 export CPPFLAGS=-I${JEV_XTOOL_PREFIX}/include
 export CFLAGS=${CPPFLAGS}
 export CXXFLAGS=${CPPFLAGS}
 # export LDFLAGS_FOR_TARGET=""
 # export LDFLAGS_FOR_TARGET="-flto -fuse-linker-plugin -ffat-lto-objects"
 # export CFLAGS_FOR_TARGET="${LDFLAGS_FOR_TARGET} -DPREFER_SIZE_OVER_SPEED=1 -Os -g -ffunction-sections -fdata-sections"
-export CFLAGS_FOR_TARGET="-DPREFER_SIZE_OVER_SPEED=1 -Os -ggdb3 -ffunction-sections -fdata-sections"
+export CFLAGS_FOR_TARGET="-DPREFER_SIZE_OVER_SPEED=1 -Os -ffunction-sections -fdata-sections"
 export LIBCFLAGS_FOR_TARGET=${CFLAGS_FOR_TARGET}
 export CXXFLAGS_FOR_TARGET=${CFLAGS_FOR_TARGET}
 export LIBCXXFLAGS_FOR_TARGET=${CXXFLAGS_FOR_TARGET}
 
 JEV_GNU_MIRROR=https://ftp.gnu.org
 
-mkdir -p ${JEV_XTOOL_PREFIX}
+mkdir -p ${JEV_XTOOL_PREFIX}/bin
+hash -r
 
 # gmp
 wget -N ${JEV_GNU_MIRROR}/gnu/gmp/${JEV_GMP}.tar.xz
@@ -60,6 +64,7 @@ pushd build-gmp
 ../${JEV_GMP}/configure --prefix=${JEV_XTOOL_PREFIX}
 make -j${NUMJOBS} install
 popd
+hash -r
 
 # mpfr
 wget -N ${JEV_GNU_MIRROR}/gnu/mpfr/${JEV_MPFR}.tar.xz
@@ -70,6 +75,7 @@ pushd build-mpfr
 ../${JEV_MPFR}/configure --prefix=${JEV_XTOOL_PREFIX}
 make -j${NUMJOBS} install
 popd
+hash -r
 
 # mpc
 wget -N ${JEV_GNU_MIRROR}/gnu/mpc/${JEV_MPC}.tar.gz
@@ -80,9 +86,10 @@ pushd build-mpc
 ../${JEV_MPC}/configure --prefix=${JEV_XTOOL_PREFIX}
 make -j${NUMJOBS} install
 popd
+hash -r
 
 # isl
-wget -N http://isl.gforge.inria.fr/${JEV_ISL}.tar.xz
+wget -N https://libisl.sourceforge.io/${JEV_ISL}.tar.xz
 rm -rf ${JEV_ISL} build-isl
 tar xf ${JEV_ISL}.tar.xz
 mkdir -p build-isl
@@ -90,6 +97,18 @@ pushd build-isl
 ../${JEV_ISL}/configure --prefix=${JEV_XTOOL_PREFIX}
 make -j${NUMJOBS} install
 popd
+hash -r
+
+# python
+wget -N https://www.python.org/ftp/python/3.10.4/${JEV_PYTHON}.tar.xz
+rm -rf ${JEV_PYTHON} build-python
+tar xf ${JEV_PYTHON}.tar.xz
+mkdir -p build-python
+pushd build-python
+LDFLAGS=${LDFLAGS_SHARED} ../${JEV_PYTHON}/configure --prefix=${JEV_XTOOL_PREFIX} --disable-shared
+LDFLAGS=${LDFLAGS_SHARED} make -j${NUMJOBS} install
+popd
+hash -r
 
 # binutils
 # wget -N ${JEV_GNU_MIRROR}/gnu/binutils/${JEV_BINUTILS}.tar.bz2
@@ -98,11 +117,11 @@ rm -rf build-binutils
 # tar xf ${JEV_BINUTILS}.tar.bz2
 mkdir -p build-binutils
 pushd build-binutils
-../${JEV_BINUTILS}/configure --prefix=${JEV_XTOOL_PREFIX} --enable-languages=c,c++ --disable-nls --enable-sysroot --enable-plugin --target=lm32-elf
+../${JEV_BINUTILS}/configure --prefix=${JEV_XTOOL_PREFIX} --enable-languages=c,c++ --disable-nls --disable-multilib --enable-sysroot --disable-plugin --target=lm32-elf --with-python=${JEV_XTOOL_PREFIX}/bin/python3
 make -j${NUMJOBS} all
 make -j${NUMJOBS} install
 popd
-
+hash -r
 
 # newlib unpack
 # wget -N http://sourceware.org/pub/newlib/${JEV_NEWLIB}.tar.gz
@@ -118,25 +137,28 @@ rm -rf build-gcc
 
 mkdir -p build-gcc
 pushd build-gcc
-../${JEV_GCC}/configure --prefix=${JEV_XTOOL_PREFIX} --enable-languages=c,c++ --disable-nls --enable-sysroot --enable-plugin --target=lm32-elf --without-headers --with-newlib --with-gnu-as --with-gnu-ld
+../${JEV_GCC}/configure --prefix=${JEV_XTOOL_PREFIX} --enable-languages=c,c++ --disable-nls --disable-multilib --enable-sysroot --disable-plugin --target=lm32-elf --without-headers --with-newlib --with-gnu-as --with-gnu-ld
 make -j${NUMJOBS} all-gcc
 make install-gcc
 popd
+hash -r
 
 # newlib build
 mkdir -p build-newlib
 pushd build-newlib
-../${JEV_NEWLIB}/configure --target=lm32-elf --prefix=${JEV_XTOOL_PREFIX}
+../${JEV_NEWLIB}/configure --disable-multilib --target=lm32-elf --prefix=${JEV_XTOOL_PREFIX}
 make -j${NUMJOBS} all
 make install
 popd
+hash -r
 
 # gcc final
 pushd build-gcc
-../${JEV_GCC}/configure --prefix=${JEV_XTOOL_PREFIX} --enable-languages=c,c++ --disable-nls --enable-sysroot --enable-plugin --target=lm32-elf --with-newlib --with-gnu-as --with-gnu-ld
+../${JEV_GCC}/configure --prefix=${JEV_XTOOL_PREFIX} --enable-languages=c,c++ --disable-nls --disable-multilib --enable-sysroot --disable-plugin --target=lm32-elf --with-newlib --with-gnu-as --with-gnu-ld
 make -j${NUMJOBS} all
 make install
 popd
+hash -r
 
 # gdb
 # # wget -N ${JEV_GNU_MIRROR}/gnu/gdb/${JEV_GDB}.tar.xz
@@ -150,4 +172,4 @@ popd
 # make -j${NUMJOBS} all
 # make -j${NUMJOBS} install
 # popd
-
+# hash -r
