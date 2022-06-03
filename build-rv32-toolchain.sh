@@ -123,24 +123,24 @@ JEV_GNU_MIRROR=https://ftp.gnu.org
 # popd
 # hash -r
 
-# # musl unpack
-# rm -rf build-musl
+# musl unpack
+rm -rf build-musl
 
-# # musl patch
-# rm -rf ${JEV_MUSL_PATCHED}
-# cp -RH ${JEV_MUSL} ${JEV_MUSL_PATCHED}
-# git clone --depth 1 https://github.com/riscv/meta-riscv || true
-# pushd meta-riscv
-# git pull
-# popd
-# pushd ${JEV_MUSL_PATCHED}
-# setopt extendedglob
-# for p in ../meta-riscv/recipes-core/musl/musl/^0001*; do
-#     patch -p1 < $p
-# done
-# patch -p1 < ../meta-riscv/recipes-core/musl/musl/0001*
-# unsetopt extendedglob
-# popd
+# musl patch
+rm -rf ${JEV_MUSL_PATCHED}
+cp -RH ${JEV_MUSL} ${JEV_MUSL_PATCHED}
+git clone --depth 1 https://github.com/riscv/meta-riscv || true
+pushd meta-riscv
+git pull
+popd
+pushd ${JEV_MUSL_PATCHED}
+setopt extendedglob
+for p in ../meta-riscv/recipes-core/musl/musl/^0001*; do
+    patch -p1 < $p
+done
+patch -p1 < ../meta-riscv/recipes-core/musl/musl/0001*
+unsetopt extendedglob
+popd
 
 # gcc
 # wget -N ${JEV_GNU_MIRROR}/gnu/gcc/${JEV_GCC}/${JEV_GCC}.tar.xz
@@ -151,8 +151,8 @@ rm -rf build-gcc
 mkdir -p build-gcc
 pushd build-gcc
 ../${JEV_GCC}/configure --prefix=${JEV_XTOOL_PREFIX} --enable-languages=c,c++ --target=riscv32-linux-gnu --without-headers --with-newlib --enable-sysroot --disable-shared
-make -j${NUMJOBS} inhibit-libc=true all-gcc
-make inhibit-libc=true install-gcc
+make -j${NUMJOBS} all-gcc
+make install-gcc
 popd
 hash -r
 
@@ -164,21 +164,22 @@ make install-headers
 popd
 hash -r
 
-# # libgcc
+# libgcc
 pushd build-gcc
-make -j${NUMJOBS} inhibit-libc=true all-target-libgcc
-make inhibit-libc=true install-target-libgcc
+make -j${NUMJOBS} all-target-libgcc
+make install-target-libgcc
 popd
 
 # musl pt 2
 pushd build-musl
+../${JEV_MUSL_PATCHED}/configure --target=riscv32-linux-gnu --enable-optimize=size --prefix=${JEV_XTOOL_PREFIX}/riscv32-linux-gnu
 make -j${NUMJOBS} all
 make install
 popd
 
 # gcc final
 pushd build-gcc
-../${JEV_GCC}/configure --prefix=${JEV_XTOOL_PREFIX} --enable-languages=c,c++ --target=riscv32-linux-gnu --with-newlib --enable-sysroot --disable-shared
+../${JEV_GCC}/configure --prefix=${JEV_XTOOL_PREFIX} --enable-languages=c,c++ --target=riscv32-linux-gnu --with-newlib --enable-sysroot
 make -j${NUMJOBS} all
 make install
 popd
