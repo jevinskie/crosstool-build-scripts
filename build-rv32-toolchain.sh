@@ -150,7 +150,7 @@ rm -rf build-gcc
 
 mkdir -p build-gcc
 pushd build-gcc
-../${JEV_GCC}/configure --prefix=${JEV_XTOOL_PREFIX} --enable-languages=c,c++ --target=riscv32-linux-gnu --without-headers --with-newlib --enable-sysroot --disable-shared
+../${JEV_GCC}/configure --prefix=${JEV_XTOOL_PREFIX} --enable-languages=c --target=riscv32-linux-gnu --without-headers --with-newlib --enable-sysroot --disable-multilib
 make -j${NUMJOBS} all-gcc
 make install-gcc
 popd
@@ -179,7 +179,7 @@ popd
 
 # gcc final
 pushd build-gcc
-../${JEV_GCC}/configure --prefix=${JEV_XTOOL_PREFIX} --enable-languages=c,c++ --target=riscv32-linux-gnu --with-newlib --enable-sysroot
+../${JEV_GCC}/configure --prefix=${JEV_XTOOL_PREFIX} --enable-languages=c --target=riscv32-linux-gnu --with-newlib --enable-sysroot --disable-multilib
 make -j${NUMJOBS} all
 make install
 popd
