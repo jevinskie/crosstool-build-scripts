@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/usr/bin/env zsh
 
 set -o errexit
 set -o nounset
@@ -6,7 +6,7 @@ set -o pipefail
 
 set -o xtrace
 
-NUMJOBS=24
+NUMJOBS=`nproc`
 
 JEV_GMP=gmp-6.2.1
 JEV_MPFR=mpfr-4.1.0
@@ -54,74 +54,93 @@ export LIBCXXFLAGS_FOR_TARGET=${CXXFLAGS_FOR_TARGET}
 
 JEV_GNU_MIRROR=https://ftp.gnu.org
 
-# gmp
-wget -N ${JEV_GNU_MIRROR}/gnu/gmp/${JEV_GMP}.tar.xz
-rm -rf ${JEV_GMP} build-gmp
-tar xf ${JEV_GMP}.tar.xz
-mkdir -p build-gmp
-pushd build-gmp
-../${JEV_GMP}/configure --prefix=${JEV_XTOOL_PREFIX}
-make -j${NUMJOBS} install
-popd
-hash -r
+# # gmp
+# wget -N ${JEV_GNU_MIRROR}/gnu/gmp/${JEV_GMP}.tar.xz
+# rm -rf ${JEV_GMP} build-gmp
+# tar xf ${JEV_GMP}.tar.xz
+# mkdir -p build-gmp
+# pushd build-gmp
+# ../${JEV_GMP}/configure --prefix=${JEV_XTOOL_PREFIX}
+# make -j${NUMJOBS} install
+# popd
+# hash -r
 
-# mpfr
-wget -N ${JEV_GNU_MIRROR}/gnu/mpfr/${JEV_MPFR}.tar.xz
-rm -rf ${JEV_MPFR} build-mfr
-tar xf ${JEV_MPFR}.tar.xz
-mkdir -p build-mpfr
-pushd build-mpfr
-../${JEV_MPFR}/configure --prefix=${JEV_XTOOL_PREFIX}
-make -j${NUMJOBS} install
-popd
-hash -r
+# # mpfr
+# wget -N ${JEV_GNU_MIRROR}/gnu/mpfr/${JEV_MPFR}.tar.xz
+# rm -rf ${JEV_MPFR} build-mfr
+# tar xf ${JEV_MPFR}.tar.xz
+# mkdir -p build-mpfr
+# pushd build-mpfr
+# ../${JEV_MPFR}/configure --prefix=${JEV_XTOOL_PREFIX}
+# make -j${NUMJOBS} install
+# popd
+# hash -r
 
-# mpc
-wget -N ${JEV_GNU_MIRROR}/gnu/mpc/${JEV_MPC}.tar.gz
-rm -rf ${JEV_MPC} build-mpc
-tar xf ${JEV_MPC}.tar.gz
-mkdir -p build-mpc
-pushd build-mpc
-../${JEV_MPC}/configure --prefix=${JEV_XTOOL_PREFIX}
-make -j${NUMJOBS} install
-popd
-hash -r
+# # mpc
+# wget -N ${JEV_GNU_MIRROR}/gnu/mpc/${JEV_MPC}.tar.gz
+# rm -rf ${JEV_MPC} build-mpc
+# tar xf ${JEV_MPC}.tar.gz
+# mkdir -p build-mpc
+# pushd build-mpc
+# ../${JEV_MPC}/configure --prefix=${JEV_XTOOL_PREFIX}
+# make -j${NUMJOBS} install
+# popd
+# hash -r
 
-# isl
-wget -N https://libisl.sourceforge.io/${JEV_ISL}.tar.xz
-rm -rf ${JEV_ISL} build-isl
-tar xf ${JEV_ISL}.tar.xz
-mkdir -p build-isl
-pushd build-isl
-../${JEV_ISL}/configure --prefix=${JEV_XTOOL_PREFIX}
-make -j${NUMJOBS} install
-popd
-hash -r
+# # isl
+# wget -N https://libisl.sourceforge.io/${JEV_ISL}.tar.xz
+# rm -rf ${JEV_ISL} build-isl
+# tar xf ${JEV_ISL}.tar.xz
+# mkdir -p build-isl
+# pushd build-isl
+# ../${JEV_ISL}/configure --prefix=${JEV_XTOOL_PREFIX}
+# make -j${NUMJOBS} install
+# popd
+# hash -r
 
-# python
-wget -N https://www.python.org/ftp/python/3.10.4/${JEV_PYTHON}.tar.xz
-rm -rf ${JEV_PYTHON} build-python
-tar xf ${JEV_PYTHON}.tar.xz
-mkdir -p build-python
-pushd build-python
-mkdir -p ${JEV_XTOOL_PREFIX}/opt/python
-LDFLAGS=${LDFLAGS_SHARED} ../${JEV_PYTHON}/configure --prefix=${JEV_XTOOL_PREFIX}/opt/python
-LDFLAGS=${LDFLAGS_SHARED} make -j${NUMJOBS} install
-popd
-hash -r
+# # python
+# wget -N https://www.python.org/ftp/python/3.10.4/${JEV_PYTHON}.tar.xz
+# rm -rf ${JEV_PYTHON} build-python
+# tar xf ${JEV_PYTHON}.tar.xz
+# mkdir -p build-python
+# pushd build-python
+# mkdir -p ${JEV_XTOOL_PREFIX}/opt/python
+# LDFLAGS=${LDFLAGS_SHARED} ../${JEV_PYTHON}/configure --prefix=${JEV_XTOOL_PREFIX}/opt/python
+# LDFLAGS=${LDFLAGS_SHARED} make -j${NUMJOBS} install
+# popd
+# hash -r
 
-# binutils
-# wget -N ${JEV_GNU_MIRROR}/gnu/binutils/${JEV_BINUTILS}.tar.bz2
-# rm -rf ${JEV_BINUTILS}
-rm -rf build-binutils
-# tar xf ${JEV_BINUTILS}.tar.bz2
-mkdir -p build-binutils
-pushd build-binutils
-../${JEV_BINUTILS}/configure --prefix=${JEV_XTOOL_PREFIX} --enable-languages=c,c++ --target=riscv32-linux-gnu --with-python=${JEV_XTOOL_PREFIX}/opt/python/bin/python3
-make -j${NUMJOBS} all
-make -j${NUMJOBS} install
-popd
-hash -r
+# # binutils
+# # wget -N ${JEV_GNU_MIRROR}/gnu/binutils/${JEV_BINUTILS}.tar.bz2
+# # rm -rf ${JEV_BINUTILS}
+# rm -rf build-binutils
+# # tar xf ${JEV_BINUTILS}.tar.bz2
+# mkdir -p build-binutils
+# pushd build-binutils
+# ../${JEV_BINUTILS}/configure --prefix=${JEV_XTOOL_PREFIX} --enable-languages=c,c++ --target=riscv32-linux-gnu --with-python=${JEV_XTOOL_PREFIX}/opt/python/bin/python3
+# make -j${NUMJOBS} all
+# make -j${NUMJOBS} install
+# popd
+# hash -r
+
+# # musl unpack
+# rm -rf build-musl
+
+# # musl patch
+# rm -rf ${JEV_MUSL_PATCHED}
+# cp -RH ${JEV_MUSL} ${JEV_MUSL_PATCHED}
+# git clone --depth 1 https://github.com/riscv/meta-riscv || true
+# pushd meta-riscv
+# git pull
+# popd
+# pushd ${JEV_MUSL_PATCHED}
+# setopt extendedglob
+# for p in ../meta-riscv/recipes-core/musl/musl/^0001*; do
+#     patch -p1 < $p
+# done
+# patch -p1 < ../meta-riscv/recipes-core/musl/musl/0001*
+# unsetopt extendedglob
+# popd
 
 # gcc
 # wget -N ${JEV_GNU_MIRROR}/gnu/gcc/${JEV_GCC}/${JEV_GCC}.tar.xz
@@ -131,43 +150,35 @@ rm -rf build-gcc
 
 mkdir -p build-gcc
 pushd build-gcc
-../${JEV_GCC}/configure --prefix=${JEV_XTOOL_PREFIX} --enable-languages=c,c++ --target=riscv32-linux-gnu --without-headers --with-newlib --with-gnu-as --with-gnu-ld
-make -j${NUMJOBS} all-gcc
-make install-gcc
+../${JEV_GCC}/configure --prefix=${JEV_XTOOL_PREFIX} --enable-languages=c,c++ --target=riscv32-linux-gnu --without-headers --with-newlib --enable-sysroot --disable-shared
+make -j${NUMJOBS} inhibit-libc=true all-gcc
+make inhibit-libc=true install-gcc
 popd
 hash -r
 
-# musl unpack
-rm -rf build-musl
-
-# musl patch
-rm -rf ${JEV_MUSL_PATCHED}
-cp -RH ${JEV_MUSL} ${JEV_MUSL_PATCHED}
-git clone --depth 1 https://github.com/riscv/meta-riscv || true
-pushd meta-riscv
-git pull
-popd
-pushd ${JEV_MUSL_PATCHED}
-setopt extendedglob
-for p in ../meta-riscv/recipes-core/musl/musl/^0001*; do
-    patch -p1 < $p
-done
-patch -p1 < ../meta-riscv/recipes-core/musl/musl/0001*
-unsetopt extendedglob
-popd
-
-# musl build
+# musl build pt 1 headers
 mkdir -p build-musl
 pushd build-musl
-../${JEV_MUSL_PATCHED}/configure --target=riscv32-linux-gnu --enable-optimize=size --prefix=${JEV_XTOOL_PREFIX}
+../${JEV_MUSL_PATCHED}/configure --target=riscv32-linux-gnu --enable-optimize=size --disable-shared --prefix=${JEV_XTOOL_PREFIX}/riscv32-linux-gnu
+make install-headers
+popd
+hash -r
+
+# # libgcc
+pushd build-gcc
+make -j${NUMJOBS} inhibit-libc=true all-target-libgcc
+make inhibit-libc=true install-target-libgcc
+popd
+
+# musl pt 2
+pushd build-musl
 make -j${NUMJOBS} all
 make install
 popd
-hash -r
 
 # gcc final
 pushd build-gcc
-../${JEV_GCC}/configure --prefix=${JEV_XTOOL_PREFIX} --enable-languages=c,c++ --target=riscv32-linux-gnu --with-newlib --with-gnu-as --with-gnu-ld
+../${JEV_GCC}/configure --prefix=${JEV_XTOOL_PREFIX} --enable-languages=c,c++ --target=riscv32-linux-gnu --with-newlib --enable-sysroot --disable-shared
 make -j${NUMJOBS} all
 make install
 popd
