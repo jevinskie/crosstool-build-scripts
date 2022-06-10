@@ -30,6 +30,7 @@ JEV_GDB=gdb-git
 # ln -s ~/code/libc/musl/git/musl musl-git
 # ln -s ~/code/linkers/binutils/git/binutils-gdb binutils-git
 # ln -s ~/code/linkers/binutils/git/binutils-gdb/gdb gdb-git
+# ln -s ~/code/linux/git/linux linux-git
 
 
 JEV_XTOOL_PREFIX=/opt/riscv/rv32-linux-gcc-git-2022-06-02
@@ -117,7 +118,7 @@ rm -rf build-binutils
 # tar xf ${JEV_BINUTILS}.tar.bz2
 mkdir -p build-binutils
 pushd build-binutils
-../${JEV_BINUTILS}/configure --prefix=${JEV_XTOOL_PREFIX} --enable-languages=c,c++ --target=riscv32-linux-gnu --with-python=${JEV_XTOOL_PREFIX}/opt/python/bin/python3
+../${JEV_BINUTILS}/configure --prefix=${JEV_XTOOL_PREFIX} --enable-languages=c,c++ --enable-plugin --target=riscv32-linux-gnu --with-python=${JEV_XTOOL_PREFIX}/opt/python/bin/python3
 make -j${NUMJOBS} all
 make -j${NUMJOBS} install
 popd
@@ -183,11 +184,18 @@ popd
 rm -rf build-gcc
 mkdir -p build-gcc
 pushd build-gcc
-../${JEV_GCC}/configure --prefix=${JEV_XTOOL_PREFIX} --enable-languages=c --target=riscv32-linux-gnu --with-newlib --enable-sysroot --disable-multilib --with-arch=rv32gc --with-abi=ilp32d
+../${JEV_GCC}/configure --prefix=${JEV_XTOOL_PREFIX} --enable-languages=c --enable-plugin --target=riscv32-linux-gnu --with-newlib --enable-sysroot --disable-multilib --with-arch=rv32gc --with-abi=ilp32d
 make -j${NUMJOBS} all
 make install
 popd
 hash -r
+
+find ${JEV_XTOOL_PREFIX} -wholename '*/include-fixed/limits.h' -print0 | xargs -0 rm -f
+
+# kernel headers
+pushd linux-git
+make headers_install ARCH=riscv INSTALL_HDR_PATH=${JEV_XTOOL_PREFIX}/riscv32-linux-gnu
+popd
 
 # gdb
 # # wget -N ${JEV_GNU_MIRROR}/gnu/gdb/${JEV_GDB}.tar.xz
