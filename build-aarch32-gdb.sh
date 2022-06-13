@@ -93,7 +93,7 @@ tar xf ${JEV_PYTHON}.tar.xz
 mkdir -p build-python
 pushd build-python
 mkdir -p ${JEV_XTOOL_PREFIX}/opt/python
-LDFLAGS=${LDFLAGS_SHARED} ../${JEV_PYTHON}/configure --prefix=${JEV_XTOOL_PREFIX}/opt/python
+LDFLAGS=${LDFLAGS_SHARED} ../${JEV_PYTHON}/configure --prefix=${JEV_XTOOL_PREFIX}/opt/python --enable-shared
 LDFLAGS=${LDFLAGS_SHARED} make -j${NUMJOBS} install
 popd
 hash -r
