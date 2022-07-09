@@ -9,7 +9,4 @@ isl-*/
 mpc-*/
 mpfr-*/
 gmp-*/
-newlib-*/
-meta-riscv/
-musl-*/
 Python-*/
