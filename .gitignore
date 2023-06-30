@@ -1,0 +1,13 @@
+build-*/
+*.tar.gz
+*.tar.bz2
+*.tar.xz
+Python-*/
+binutils-*/
+gcc-*/
+gdb-*/
+gmp-*/
+isl-*/
+mpc-*/
+mpfr-*/
+newlib-*/
