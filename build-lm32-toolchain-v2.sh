@@ -41,7 +41,7 @@ export LDFLAGS="-L${JEV_XTOOL_PREFIX}/lib ${LDFLAGS}"
 export CPPFLAGS="-I${JEV_XTOOL_PREFIX}/include ${CPPFLAGS}"
 export CFLAGS="${CPPFLAGS} -Wno-error"
 export CXXFLAGS="${CPPFLAGS} -Wno-error"
-export CFLAGS_FOR_TARGET="-DPREFER_SIZE_OVER_SPEED=1 -Oz -g -ffunction-sections -fdata-sections"
+export CFLAGS_FOR_TARGET="-DPREFER_SIZE_OVER_SPEED=1 -mbarrel-shift-enabled -mmultiply-enabled -mdivide-enabled -msign-extend-enabled -Oz -g -ffunction-sections -fdata-sections"
 export CXXFLAGS_FOR_TARGET="${CFLAGS_FOR_TARGET}"
 
 JEV_GNU_MIRROR=https://ftp.gnu.org
@@ -104,7 +104,7 @@ rm -rf ${JEV_BINUTILS} build-binutils
 tar xf ${JEV_BINUTILS}.tar.bz2
 mkdir -p build-binutils
 pushd build-binutils
-../${JEV_BINUTILS}/configure --prefix=${JEV_XTOOL_PREFIX} --enable-languages=c,c++ --target=lm32-elf
+../${JEV_BINUTILS}/configure --prefix=${JEV_XTOOL_PREFIX} --disable-multilib --enable-languages=c,c++ --target=lm32-elf
 make -j "${NUM_CORES}" all
 make -j "${NUM_CORES}" install
 popd
@@ -121,20 +121,20 @@ tar xf ${JEV_GCC}.tar.xz
 
 mkdir -p build-gcc
 pushd build-gcc
-../${JEV_GCC}/configure --prefix=${JEV_XTOOL_PREFIX} --enable-languages=c,c++ --target=lm32-elf --without-headers --with-newlib --with-gnu-as --with-gnu-ld --enable-cxx-flags='-Oz -ffunction-sections -fdata-sections'
+../${JEV_GCC}/configure --prefix=${JEV_XTOOL_PREFIX} --disable-shared --disable-multilib --disable-threads --disable-tls --enable-languages=c,c++ --target=lm32-elf --without-headers --with-newlib --with-gnu-as --with-gnu-ld --enable-target-optspace --enable-cxx-flags='-Oz -ffunction-sections -fdata-sections'
 make -j "${NUM_CORES}" all-gcc
 make install-gcc
 popd
 
 mkdir -p build-newlib
 pushd build-newlib
-../${JEV_NEWLIB}/configure --target=lm32-elf --prefix=${JEV_XTOOL_PREFIX}
+../${JEV_NEWLIB}/configure --disable-shared --disable-multilib --enable-target-optspace --target=lm32-elf --prefix=${JEV_XTOOL_PREFIX}
 make -j "${NUM_CORES}" all
 make install
 popd
 
 pushd build-gcc
-../${JEV_GCC}/configure --prefix=${JEV_XTOOL_PREFIX} --enable-languages=c,c++ --target=lm32-elf --with-newlib --with-gnu-as --with-gnu-ld --enable-cxx-flags='-Oz -ffunction-sections -fdata-sections'
+../${JEV_GCC}/configure --prefix=${JEV_XTOOL_PREFIX} --disable-shared --disable-multilib --disable-threads --disable-tls --enable-languages=c,c++ --target=lm32-elf --with-newlib --with-gnu-as --with-gnu-ld --enable-target-optspace --enable-cxx-flags='-Oz -ffunction-sections -fdata-sections'
 make -j "${NUM_CORES}" all
 make install
 popd
