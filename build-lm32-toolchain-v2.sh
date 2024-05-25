@@ -85,7 +85,7 @@ else
     case "${UNAME_S}" in
         Darwin)
             if type brew &>/dev/null; then
-                brew install autoconf automake libtool make pkg-config gnu-tar openssl readline sqlite3 xz zstd zlib bzip2 texinfo tcl-tk flex bison
+                brew install autoconf automake libtool make pkg-config gnu-tar openssl readline sqlite3 xz zstd zlib bzip2 texinfo tcl-tk flex bison xxhash
                 JEV_BREW_ROOT=$(brew --prefix)
                 export PATH="${JEV_BREW_ROOT}/bin:${PATH}"
                 export PKG_CONFIG_PATH="${JEV_BREW_ROOT}/lib/pkgconfig:${PKG_CONFIG_PATH}"
@@ -100,7 +100,7 @@ else
         Linux)
             if type apt &>/dev/null; then
                 sudo apt update
-                sudo apt install -y build-essential autoconf automake libtool make pkg-config tar openssl libssl-dev libreadline-dev libsqlite3-dev xz-utils liblzma-dev zstd libzstd-dev zlib1g-dev bzip2 libbz2-dev texinfo tcl tk tcl-dev tk-dev curl git libncursesw5-dev libxml2-dev libxmlsec1-dev libffi-dev flex bison
+                sudo apt install -y build-essential autoconf automake libtool make pkg-config tar openssl libssl-dev libreadline-dev libsqlite3-dev xz-utils liblzma-dev zstd libzstd-dev zlib1g-dev bzip2 libbz2-dev texinfo tcl tk tcl-dev tk-dev curl git libncursesw5-dev libxml2-dev libxmlsec1-dev libffi-dev flex bison libxxhash-dev libdebuginfod-dev
             else
                 echo "Linux without apt is not supported." >&2
                 exit 1
@@ -117,7 +117,7 @@ mkdir -p "${JEV_XTOOL_PREFIX}/bin"
 
 export PATH="${JEV_XTOOL_PREFIX}/bin:${PATH}"
 export PKG_CONFIG_PATH="${JEV_XTOOL_PREFIX}/lib/pkgconfig:${PKG_CONFIG_PATH}"
-export LDFLAGS="-L${JEV_XTOOL_PREFIX}/lib ${LDFLAGS}"
+export LDFLAGS="-L${JEV_XTOOL_PREFIX}/lib -Wl,-rpath,${JEV_XTOOL_PREFIX}/lib ${LDFLAGS}"
 export CPPFLAGS="-I${JEV_XTOOL_PREFIX}/include ${CPPFLAGS}"
 export CFLAGS="${CPPFLAGS} -Wno-error"
 export CXXFLAGS="${CPPFLAGS} -Wno-error"
@@ -193,6 +193,8 @@ popd
 ln -f -s "${JEV_XTOOL_PREFIX}/bin/python3" "${JEV_XTOOL_PREFIX}/bin/python"
 ln -f -s "${JEV_XTOOL_PREFIX}/bin/python3-config" "${JEV_XTOOL_PREFIX}/bin/python-config"
 refresh_path
+
+exit 0
 
 # binutils
 wget -N "${JEV_GNU_MIRROR}/gnu/binutils/${JEV_BINUTILS}.tar.bz2"
