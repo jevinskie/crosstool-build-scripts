@@ -124,7 +124,7 @@ export CXXFLAGS="${CPPFLAGS} -Wno-error"
 export CFLAGS_FOR_TARGET="-DPREFER_SIZE_OVER_SPEED=1 -DSMALL_MEMORY=1 -DSMALL_DTOA=1 -mbarrel-shift-enabled -mmultiply-enabled -mdivide-enabled -msign-extend-enabled -Oz -g -fno-unwind-tables -fno-asynchronous-unwind-tables -fno-exceptions -fomit-frame-pointer -ffunction-sections -fdata-sections -fvisibility=hidden"
 export CXXFLAGS_FOR_TARGET="${CFLAGS_FOR_TARGET} -fno-rtti"
 export LDFLAGS_FOR_TARGET="-Oz -fno-unwind-tables -fno-asynchronous-unwind-tables -fno-exceptions -ffunction-sections -fdata-sections -fvisibility=hidden -Wl,--gc-sections"
-JEV_LIBSTDCXXFLAGS="-mbarrel-shift-enabled -mmultiply-enabled -mdivide-enabled -msign-extend-enabled -Oz -g -fno-unwind-tables -fno-asynchronous-unwind-tables -fno-exceptions -fomit-frame-pointer -ffunction-sections -fdata-sections -fvisibility=hidden -fno-rtti"
+JEV_LIBSTDCXX_FLAGS="-mbarrel-shift-enabled -mmultiply-enabled -mdivide-enabled -msign-extend-enabled -Oz -g -fno-unwind-tables -fno-asynchronous-unwind-tables -fno-exceptions -fomit-frame-pointer -ffunction-sections -fdata-sections -fvisibility=hidden -fno-rtti"
 
 JEV_GNU_MIRROR=https://ftp.gnu.org
 
