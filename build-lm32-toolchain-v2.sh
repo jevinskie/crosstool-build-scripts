@@ -59,7 +59,7 @@ else
         Linux)
             if type apt &>/dev/null; then
                 sudo apt update
-                sudo apt install -y build-essential autoconf automake libtool make pkg-config tar openssl libssl-dev libreadline-dev libsqlite3-dev xz-utils liblzma-dev zstd libzstd-dev zlib1g-dev bzip2 libbz2-dev texinfo tcl tk tcl-dev tk-dev
+                sudo apt install -y build-essential autoconf automake libtool make pkg-config tar openssl libssl-dev libreadline-dev libsqlite3-dev xz-utils liblzma-dev zstd libzstd-dev zlib1g-dev bzip2 libbz2-dev texinfo tcl tk tcl-dev tk-dev curl git libncursesw5-dev libxml2-dev libxmlsec1-dev libffi-dev
             else
                 echo "Linux without apt is not supported." >&2
                 exit 1
