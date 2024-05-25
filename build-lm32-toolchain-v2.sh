@@ -44,7 +44,7 @@ else
     case "${UNAME_S}" in
         Darwin)
             if type brew &>/dev/null; then
-                brew install make pkg-config gnu-tar openssl readline sqlite3 xz zstd zlib bzip2
+                brew install make pkg-config gnu-tar openssl readline sqlite3 xz zstd zlib bzip2 texinfo
                 JEV_BREW_ROOT=$(brew --prefix)
                 export PATH="${JEV_BREW_ROOT}/bin:${PATH}"
                 export PKG_CONFIG_PATH="${JEV_BREW_ROOT}/lib/pkgconfig:${PKG_CONFIG_PATH}"
@@ -59,7 +59,7 @@ else
         Linux)
             if type apt &>/dev/null; then
                 sudo apt update
-                sudo apt install -y make pkg-config tar openssl libssl-dev libreadline-dev libsqlite3-dev xz-utils liblzma-dev zstd libzstd-dev zlib1g-dev bzip2 libbz2-dev
+                sudo apt install -y make pkg-config tar openssl libssl-dev libreadline-dev libsqlite3-dev xz-utils liblzma-dev zstd libzstd-dev zlib1g-dev bzip2 libbz2-dev texinfo
             else
                 echo "Linux without apt is not supported." >&2
                 exit 1
