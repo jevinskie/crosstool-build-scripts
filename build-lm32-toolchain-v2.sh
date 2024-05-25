@@ -6,7 +6,9 @@ set -x
 JEV_GMP=gmp-6.3.0
 JEV_MPFR=mpfr-4.2.1
 JEV_MPC=mpc-1.3.1
-JEV_GCC=gcc-14.1.0
+#JEV_GCC=gcc-14.1.0
+# gcc 14.1.0 doesn't build libstdc++ with -fno-rtti but it is fixed on HEAD
+JEV_GCC=gcc-git
 JEV_NEWLIB=newlib-4.4.0.20231231
 JEV_BINUTILS=binutils-2.42
 JEV_GDB=gdb-14.2
@@ -14,6 +16,33 @@ JEV_ISL=isl-0.26
 JEV_PYTHON=3.11.9
 
 JEV_XTOOL_PREFIX=/opt/x-tools/lm32-elf
+
+if [[ "${OS}" == "Windows_NT" ]]; then
+    echo "Windows not supported yet" >&2
+    exit 1
+else
+    UNAME_S=$(uname -s)
+    case "${UNAME_S}" in
+        Darwin)
+            USING_MAC=1
+            USING_LINUX=0
+            ;;
+        Linux)
+            USING_MAC=0
+            USING_LINUX=1
+            ;;
+        *)
+            echo "Unsupported OS: ${UNAME_S}" >&2
+            exit 1
+            ;;
+    esac
+fi
+
+if [[ "${USING_MAC}" -eq 1 ]]; then
+   SCRIPT_DIR="$(dirname -- "$(greadlink -f -- "$0"; )"; )"
+else
+   SCRIPT_DIR="$(dirname -- "$(readlink -f -- "$0"; )"; )"
+fi
 
 if [[ -n "${ZSH_VERSION}" ]]; then
     USING_ZSH=1
@@ -24,6 +53,18 @@ elif [[ -n "${BASH_VERSION}" ]]; then
 else
     echo "Only zsh or bash is supported." >&2
     exit 1
+fi
+
+if [[ "${JEV_GCC}" == "gcc-git" ]]; then
+    if [[ ! -d "${GCC_GIT_DIR}" ]]; then
+        echo "GCC_GIT_DIR env var must point to gcc git checkout." >&2
+        exit 1
+    fi
+    USING_GCC_GIT=1
+    GCC_SRC_DIR="${GCC_GIT_DIR}"
+else
+    USING_GCC_GIT=0
+    GCC_SRC_DIR="${SCRIPT_DIR}/${JEV_GCC}"
 fi
 
 function refresh_path() {
@@ -83,7 +124,7 @@ export CXXFLAGS="${CPPFLAGS} -Wno-error"
 export CFLAGS_FOR_TARGET="-DPREFER_SIZE_OVER_SPEED=1 -DSMALL_MEMORY=1 -DSMALL_DTOA=1 -mbarrel-shift-enabled -mmultiply-enabled -mdivide-enabled -msign-extend-enabled -Oz -g -fno-unwind-tables -fno-asynchronous-unwind-tables -fno-exceptions -fomit-frame-pointer -ffunction-sections -fdata-sections -fvisibility=hidden"
 export CXXFLAGS_FOR_TARGET="${CFLAGS_FOR_TARGET} -fno-rtti"
 export LDFLAGS_FOR_TARGET="-Oz -fno-unwind-tables -fno-asynchronous-unwind-tables -fno-exceptions -ffunction-sections -fdata-sections -fvisibility=hidden -Wl,--gc-sections"
-JEV_LIBSTDCXXFLAGS="-mbarrel-shift-enabled -mmultiply-enabled -mdivide-enabled -msign-extend-enabled  -Oz -g -fno-unwind-tables -fno-asynchronous-unwind-tables -fno-exceptions  -fomit-frame-pointer -ffunction-sections -fdata-sections -fvisibility=hidden -fno-rtti"
+JEV_LIBSTDCXXFLAGS="-mbarrel-shift-enabled -mmultiply-enabled -mdivide-enabled -msign-extend-enabled -Oz -g -fno-unwind-tables -fno-asynchronous-unwind-tables -fno-exceptions -fomit-frame-pointer -ffunction-sections -fdata-sections -fvisibility=hidden -fno-rtti"
 
 JEV_GNU_MIRROR=https://ftp.gnu.org
 
@@ -171,13 +212,16 @@ rm -rf "${JEV_NEWLIB}" build-newlib
 tar xf "${JEV_NEWLIB}.tar.gz"
 
 # gcc
-wget -N "${JEV_GNU_MIRROR}/gnu/gcc/${JEV_GCC}/${JEV_GCC}.tar.xz"
-rm -rf "${JEV_GCC}" build-gcc
-tar xf "${JEV_GCC}.tar.xz"
+if [[ "${USING_GCC_GIT}" -eq 0 ]]; then
+    wget -N "${JEV_GNU_MIRROR}/gnu/gcc/${JEV_GCC}/${JEV_GCC}.tar.xz"
+    rm -rf "${GCC_SRC_DIR}"
+    tar xf "${JEV_GCC}.tar.xz"
+fi
+rm -rf build-gcc
 
 mkdir -p build-gcc
 pushd build-gcc
-../${JEV_GCC}/configure --prefix="${JEV_XTOOL_PREFIX}" --disable-shared --disable-multilib --disable-threads --disable-tls --enable-lto --enable-languages=c,c++ --target=lm32-elf --without-headers --with-newlib --with-gnu-as --with-gnu-ld --disable-tm-clone-registry --enable-cxx-flags="${JEV_LIBSTDCXX_FLAGS}"
+"${GCC_SRC_DIR}/configure" --prefix="${JEV_XTOOL_PREFIX}" --disable-shared --disable-multilib --disable-threads --disable-tls --enable-lto --enable-languages=c,c++ --target=lm32-elf --without-headers --with-newlib --with-gnu-as --with-gnu-ld --disable-tm-clone-registry --enable-cxx-flags="${JEV_LIBSTDCXX_FLAGS}"
 make -j "${NUM_CORES}" all-gcc V=0
 make -j "${NUM_CORES}" install-gcc V=0
 popd
@@ -192,7 +236,7 @@ popd
 refresh_path
 
 pushd build-gcc
-../${JEV_GCC}/configure --prefix=${JEV_XTOOL_PREFIX} --disable-shared --disable-multilib --disable-threads --disable-tls --enable-lto --enable-languages=c,c++ --target=lm32-elf --with-newlib --with-gnu-as --with-gnu-ld --enable-cxx-flags="${JEV_LIBSTDCXX_FLAGS}"
+"${GCC_SRC_DIR}/configure" --prefix="${JEV_XTOOL_PREFIX}" --disable-shared --disable-multilib --disable-threads --disable-tls --enable-lto --enable-languages=c,c++ --target=lm32-elf --with-newlib --with-gnu-as --with-gnu-ld --enable-cxx-flags="${JEV_LIBSTDCXX_FLAGS}"
 make -j "${NUM_CORES}" all V=0
 make -j "${NUM_CORES}" install V=0
 popd
