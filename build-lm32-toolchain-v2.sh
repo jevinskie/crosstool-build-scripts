@@ -6,12 +6,12 @@ set -x
 JEV_GMP=gmp-6.3.0
 JEV_MPFR=mpfr-4.2.1
 JEV_MPC=mpc-1.3.1
-JEV_GCC=gcc-13.2.0
+JEV_GCC=gcc-14.1.0
 JEV_NEWLIB=newlib-4.4.0.20231231
-JEV_BINUTILS=binutils-2.41
-JEV_GDB=gdb-14.1
+JEV_BINUTILS=binutils-2.42
+JEV_GDB=gdb-14.2
 JEV_ISL=isl-0.26
-JEV_PYTHON=3.11.7
+JEV_PYTHON=3.11.9
 
 JEV_XTOOL_PREFIX=/opt/x-tools/lm32-elf
 
