@@ -9,13 +9,14 @@ JEV_MPC=mpc-1.3.1
 #JEV_GCC=gcc-14.1.0
 # gcc 14.1.0 doesn't build libstdc++ with -fno-rtti but it is fixed on HEAD
 JEV_GCC=gcc-git
-JEV_NEWLIB=newlib-4.4.0.20231231
-JEV_BINUTILS=binutils-2.42
+# JEV_NEWLIB=newlib-4.4.0.20231231
+# JEV_BINUTILS=binutils-2.42
+JEV_BINUTILS=binutils-git
 JEV_GDB=gdb-14.2
 JEV_ISL=isl-0.26
 JEV_PYTHON=3.11.9
 
-JEV_XTOOL_PREFIX=/opt/x-tools/lm32-elf
+JEV_XTOOL_PREFIX=$HOME/base/gcc-15
 
 if [[ "${OS}" == "Windows_NT" ]]; then
     echo "Windows not supported yet" >&2
@@ -65,6 +66,18 @@ if [[ "${JEV_GCC}" == "gcc-git" ]]; then
 else
     USING_GCC_GIT=0
     GCC_SRC_DIR="${SCRIPT_DIR}/${JEV_GCC}"
+fi
+
+if [[ "${JEV_BINUTILS}" == "binutils-git" ]]; then
+    if [[ ! -d "${BINUTILS_GIT_DIR}" ]]; then
+        echo "BINUTILS_GIT_DIR env var must point to binutils git checkout." >&2
+        exit 1
+    fi
+    USING_BINUTILS_GIT=1
+    BINUTILS_SRC_DIR="${BINUTILS_GIT_DIR}"
+else
+    USING_BINUTILS_GIT=0
+    BINUTILS_SRC_DIR="${SCRIPT_DIR}/${JEV_BINUTILS}"
 fi
 
 function refresh_path() {
@@ -121,10 +134,10 @@ export LDFLAGS="-L${JEV_XTOOL_PREFIX}/lib -Wl,-rpath,${JEV_XTOOL_PREFIX}/lib ${L
 export CPPFLAGS="-I${JEV_XTOOL_PREFIX}/include ${CPPFLAGS}"
 export CFLAGS="${CPPFLAGS} -Wno-error"
 export CXXFLAGS="${CPPFLAGS} -Wno-error"
-export CFLAGS_FOR_TARGET="-DPREFER_SIZE_OVER_SPEED=1 -DSMALL_MEMORY=1 -DSMALL_DTOA=1 -mbarrel-shift-enabled -mmultiply-enabled -mdivide-enabled -msign-extend-enabled -Oz -g -fno-unwind-tables -fno-asynchronous-unwind-tables -fno-exceptions -fomit-frame-pointer -ffunction-sections -fdata-sections -fvisibility=hidden"
-export CXXFLAGS_FOR_TARGET="${CFLAGS_FOR_TARGET} -fno-rtti"
-export LDFLAGS_FOR_TARGET="-Oz -fno-unwind-tables -fno-asynchronous-unwind-tables -fno-exceptions -ffunction-sections -fdata-sections -fvisibility=hidden -Wl,--gc-sections"
-JEV_LIBSTDCXX_FLAGS="-mbarrel-shift-enabled -mmultiply-enabled -mdivide-enabled -msign-extend-enabled -Oz -g -fno-unwind-tables -fno-asynchronous-unwind-tables -fno-exceptions -fomit-frame-pointer -ffunction-sections -fdata-sections -fvisibility=hidden -fno-rtti"
+export CFLAGS_FOR_TARGET=""
+export CXXFLAGS_FOR_TARGET="${CFLAGS_FOR_TARGET}"
+export LDFLAGS_FOR_TARGET=""
+JEV_LIBSTDCXX_FLAGS=""
 
 JEV_GNU_MIRROR=https://ftp.gnu.org
 
@@ -195,21 +208,20 @@ ln -f -s "${JEV_XTOOL_PREFIX}/bin/python3-config" "${JEV_XTOOL_PREFIX}/bin/pytho
 refresh_path
 
 # binutils
-wget -N "${JEV_GNU_MIRROR}/gnu/binutils/${JEV_BINUTILS}.tar.bz2"
-rm -rf "${JEV_BINUTILS}" build-binutils
-tar xf "${JEV_BINUTILS}.tar.bz2"
+if [[ "${USING_BINUTILS_GIT}" -eq 0 ]]; then
+    wget -N "${JEV_GNU_MIRROR}/gnu/binutils/${JEV_BINUTILS}.tar.bz2"
+    rm -rf "${BINUTILS_SRC_DIR}"
+    tar xf "${JEV_BINUTILS}.tar.xz"
+fi
+rm -rf build-binutils
+
 mkdir -p build-binutils
 pushd build-binutils
-../${JEV_BINUTILS}/configure --prefix="${JEV_XTOOL_PREFIX}" --disable-multilib --enable-plugin --enable-lto --enable-languages=c,c++ --target=lm32-elf
+"${BINUTILS_SRC_DIR}/configure" --prefix="${JEV_XTOOL_PREFIX}" --enable-multilib --enable-plugin --enable-languages=c,c++ --disable-werror --enable-targets=all --with-lzma --with-zstd --enable-gold --enable-gprofng --enable-host-pie --enable-libssp --enable-lto --enable-vtable-verify --with-intel-pt --with-debuginfod --with-zstd --with-xxhash --enable-sim --enable-libbacktrace --enable-tui --enable-source-highlight --enable-plugins --enable-isl-version-check --enable-libquadmath --with-python=${JEV_XTOOL_PREFIX}/bin/python3.11 --with-curses --with-system-readline
 make -j "${NUM_CORES}" all V=0
 make -j "${NUM_CORES}" install V=0
 popd
 refresh_path
-
-# newlib
-wget -N "https://sourceware.org/pub/newlib/${JEV_NEWLIB}.tar.gz"
-rm -rf "${JEV_NEWLIB}" build-newlib
-tar xf "${JEV_NEWLIB}.tar.gz"
 
 # gcc
 if [[ "${USING_GCC_GIT}" -eq 0 ]]; then
@@ -221,35 +233,22 @@ rm -rf build-gcc
 
 mkdir -p build-gcc
 pushd build-gcc
-"${GCC_SRC_DIR}/configure" --prefix="${JEV_XTOOL_PREFIX}" --disable-shared --disable-multilib --disable-threads --disable-tls --enable-lto --enable-languages=c,c++ --target=lm32-elf --without-headers --with-newlib --with-gnu-as --with-gnu-ld --disable-tm-clone-registry --enable-cxx-flags="${JEV_LIBSTDCXX_FLAGS}"
-make -j "${NUM_CORES}" all-gcc V=0
-make -j "${NUM_CORES}" install-gcc V=0
-popd
-refresh_path
-
-mkdir -p build-newlib
-pushd build-newlib
-../${JEV_NEWLIB}/configure --disable-shared --disable-multilib --target=lm32-elf --prefix="${JEV_XTOOL_PREFIX}"
+"${GCC_SRC_DIR}/configure" --prefix="${JEV_XTOOL_PREFIX}" --enable-shared --enable-multilib --enable-threads --enable-tls --enable-lto --enable-languages=c,c++ --with-gnu-as --with-gnu-ld
 make -j "${NUM_CORES}" all V=0
 make -j "${NUM_CORES}" install V=0
 popd
 refresh_path
 
-pushd build-gcc
-"${GCC_SRC_DIR}/configure" --prefix="${JEV_XTOOL_PREFIX}" --disable-shared --disable-multilib --disable-threads --disable-tls --enable-lto --enable-languages=c,c++ --target=lm32-elf --with-newlib --with-gnu-as --with-gnu-ld --enable-cxx-flags="${JEV_LIBSTDCXX_FLAGS}"
-make -j "${NUM_CORES}" all V=0
-make -j "${NUM_CORES}" install V=0
-popd
-refresh_path
-
-# gdb
-wget -N ${JEV_GNU_MIRROR}/gnu/gdb/${JEV_GDB}.tar.xz
-rm -rf ${JEV_GDB} build-gdb
-tar xf ${JEV_GDB}.tar.xz
-mkdir -p build-gdb
-pushd build-gdb
-../${JEV_GDB}/configure --prefix=${JEV_XTOOL_PREFIX} --disable-guile --enable-python --enable-sim --enable-tui --enable-languages=c,c++ --target=lm32-elf
-make -j "${NUM_CORES}" all V=0
-make -j "${NUM_CORES}" install V=0
-popd
-refresh_path
+if [[ "${USING_BINUTILS_GIT}" -eq 0 ]]; then
+    # gdb
+    wget -N ${JEV_GNU_MIRROR}/gnu/gdb/${JEV_GDB}.tar.xz
+    rm -rf ${JEV_GDB} build-gdb
+    tar xf ${JEV_GDB}.tar.xz
+    mkdir -p build-gdb
+    pushd build-gdb
+    ../${JEV_GDB}/configure --prefix=${JEV_XTOOL_PREFIX} --disable-guile --enable-python --enable-sim --enable-tui --enable-languages=c,c++
+    make -j "${NUM_CORES}" all V=0
+    make -j "${NUM_CORES}" install V=0
+    popd
+    refresh_path
+fi
