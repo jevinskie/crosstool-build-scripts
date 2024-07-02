@@ -20,7 +20,7 @@ JEV_PYTHON=3.11.9
 
 JEV_XTOOL_PREFIX=/opt/gcc/gcc-15-bare
 
-if [[ "${OS}" == "Windows_NT" ]]; then
+if [[ "${OS:-}" == "Windows_NT" ]]; then
     echo "Windows not supported yet" >&2
     exit 1
 else
@@ -47,10 +47,10 @@ else
    SCRIPT_DIR="$(dirname -- "$(readlink -f -- "$0"; )"; )"
 fi
 
-if [[ -n "${ZSH_VERSION}" ]]; then
+if [[ -n "${ZSH_VERSION:-}" ]]; then
     USING_ZSH=1
     USING_BASH=0
-elif [[ -n "${BASH_VERSION}" ]]; then
+elif [[ -n "${BASH_VERSION:-}" ]]; then
     USING_BASH=1
     USING_ZSH=0
 else
@@ -92,7 +92,7 @@ function refresh_path() {
     fi
 }
 
-if [[ "${OS}" == "Windows_NT" ]]; then
+if [[ "${OS:-}" == "Windows_NT" ]]; then
     echo "Windows not supported yet" >&2
     exit 1
 else
@@ -103,9 +103,9 @@ else
                 brew install autoconf automake libtool make pkg-config gnu-tar openssl readline sqlite3 xz zstd zlib bzip2 texinfo tcl-tk flex bison xxhash
                 JEV_BREW_ROOT=$(brew --prefix)
                 export PATH="${JEV_BREW_ROOT}/bin:${PATH}"
-                export PKG_CONFIG_PATH="${JEV_BREW_ROOT}/lib/pkgconfig:${PKG_CONFIG_PATH}"
-                export LDFLAGS="-L${JEV_BREW_ROOT}/lib ${LDFLAGS}"
-                export CPPFLAGS="-idirafter ${JEV_BREW_ROOT}/include ${CPPFLAGS}"
+                export PKG_CONFIG_PATH="${JEV_BREW_ROOT}/lib/pkgconfig:${PKG_CONFIG_PATH:-}"
+                export LDFLAGS="-L${JEV_BREW_ROOT}/lib ${LDFLAGS:-}"
+                export CPPFLAGS="-idirafter ${JEV_BREW_ROOT}/include ${CPPFLAGS:-}"
                 alias tar=gtar
             else
                 echo "Homebrew is required." >&2
@@ -113,10 +113,10 @@ else
             fi
             ;;
         Linux)
-            if [[ -z "${SKIP_APT_INSTALL}" ]] && type apt &>/dev/null; then
+            if [[ -z "${SKIP_APT_INSTALL:-}" ]] && type apt &>/dev/null; then
                 sudo apt update
                 sudo apt install -y build-essential autoconf automake libtool make tar openssl libssl-dev libreadline-dev libsqlite3-dev xz-utils liblzma-dev zstd libzstd-dev zlib1g-dev bzip2 libbz2-dev texinfo tcl tk tcl-dev tk-dev curl git libncursesw5-dev libxml2-dev libxmlsec1-dev libffi-dev flex bison libxxhash-dev libdebuginfod-dev uuid-dev
-            elif [[ -n "${SKIP_APT_INSTALL}" ]]; then
+            elif [[ -n "${SKIP_APT_INSTALL:-}" ]]; then
                 true
             else
                 echo "Linux without apt is not supported." >&2
@@ -130,15 +130,16 @@ else
     esac
 fi
 
+rm -rf "${JEV_XTOOL_PREFIX}"
 mkdir -p "${JEV_XTOOL_PREFIX}/bin" "${JEV_XTOOL_PREFIX}/lib/pkgconfig"
 
 export PATH="${JEV_XTOOL_PREFIX}/bin:${PATH}"
-export PKG_CONFIG_PATH="${JEV_XTOOL_PREFIX}/lib/pkgconfig:${PKG_CONFIG_PATH}"
-export LDFLAGS="${LDFLAGS} -L${JEV_XTOOL_PREFIX}/lib -Wl,-rpath,${JEV_XTOOL_PREFIX}/lib ${LDFLAGS}"
+export PKG_CONFIG_PATH="${JEV_XTOOL_PREFIX}/lib/pkgconfig:${PKG_CONFIG_PATH:-}"
+export LDFLAGS="${LDFLAGS:-} -L${JEV_XTOOL_PREFIX}/lib -Wl,-rpath,${JEV_XTOOL_PREFIX}/lib"
 # export CPPFLAGS="${CPPFLAGS} -I${JEV_XTOOL_PREFIX}/include ${CPPFLAGS} -march=native -ggdb3 -fno-eliminate-unused-debug-symbols -fvar-tracking -fvar-tracking-assignments -gdescribe-dies -grecord-gcc-switches -gstatement-frontiers -ginline-points -gas-locview-support -gvariable-location-views -fno-eliminate-unused-debug-types -O0"
-export CPPFLAGS="${CPPFLAGS} -I${JEV_XTOOL_PREFIX}/include ${CPPFLAGS} -march=native"
-export CFLAGS="${CFLAGS} ${CPPFLAGS} -Wno-error"
-export CXXFLAGS="${CXXFLAGS} ${CPPFLAGS} -Wno-error"
+export CPPFLAGS="${CPPFLAGS:-} -I${JEV_XTOOL_PREFIX}/include ${CPPFLAGS:-} -march=native"
+export CFLAGS="${CFLAGS:-} ${CPPFLAGS} -Wno-error"
+export CXXFLAGS="${CXXFLAGS:-} ${CPPFLAGS} -Wno-error"
 export CFLAGS_FOR_TARGET="-Wno-error"
 export CXXFLAGS_FOR_TARGET="${CFLAGS_FOR_TARGET}"
 export LDFLAGS_FOR_TARGET=""
@@ -150,7 +151,7 @@ NUM_CORES=$(nproc)
 
 refresh_path
 
-cd ${SCRIPT_DIR}/..
+cd "${SCRIPT_DIR}/.."
 
 # # gmp
 # wget -N "${JEV_GNU_MIRROR}/gnu/gmp/${JEV_GMP}.tar.xz"
@@ -245,8 +246,8 @@ mkdir -p build-gcc
 pushd build-gcc
 "${GCC_SRC_DIR}/configure" --prefix="${JEV_XTOOL_PREFIX}" --enable-shared --disable-multilib --enable-threads --enable-tls --disable-werror --disable-lto --enable-languages=c,c++ --disable-gcov --disable-tm-clone-registry --enable-__cxa_atexit --enable-gnu-indirect-function --disable-bootstrap --disable-libada --disable-libgm2 --disable-libsanitizer --disable-libgomp --disable-libvtv --disable-checking --disable-nls --disable-decimal-float --with-linker-hash-style=gnu --enable-linker-build-id --disable-cet
 
-make -j "${NUM_CORES}" all V=0
-make -j "${NUM_CORES}" install V=0
+make -j "${NUM_CORES}" all V=1
+make -j "${NUM_CORES}" install V=1
 popd
 refresh_path
 
