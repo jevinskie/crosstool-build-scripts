@@ -244,7 +244,7 @@ rm -rf build-gcc
 
 mkdir -p build-gcc
 pushd build-gcc
-"${GCC_SRC_DIR}/configure" --prefix="${JEV_XTOOL_PREFIX}" --enable-shared --disable-multilib --enable-threads --enable-tls --disable-werror --disable-lto --enable-languages=c,c++ --disable-gcov --disable-tm-clone-registry --enable-__cxa_atexit --enable-gnu-indirect-function --disable-bootstrap --disable-libada --disable-libgm2 --disable-libsanitizer --disable-libgomp --disable-libvtv --disable-checking --disable-nls --disable-decimal-float --with-linker-hash-style=gnu --enable-linker-build-id --disable-cet
+"${GCC_SRC_DIR}/configure" --prefix="${JEV_XTOOL_PREFIX}" --enable-shared --enable-multilib --enable-threads --enable-tls --disable-werror --enable-lto --enable-languages=c,c++ --enable-gcov --enable-tm-clone-registry --enable-__cxa_atexit --enable-gnu-indirect-function --disable-bootstrap --disable-libada --disable-libgm2 --enable-libsanitizer --enable-libgomp --enable-libvtv --disable-checking --disable-nls --enable-decimal-float --with-linker-hash-style=gnu --enable-linker-build-id --disable-cet
 
 make -j "${NUM_CORES}" all V=1
 make -j "${NUM_CORES}" install V=1
