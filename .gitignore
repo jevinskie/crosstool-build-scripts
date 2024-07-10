@@ -11,3 +11,8 @@ isl-*/
 mpc-*/
 mpfr-*/
 newlib-*/
+scripts/standalone-main
+scripts/standalone-start
+scripts/hello
+scripts/hello-cxx
+scripts/*.o
