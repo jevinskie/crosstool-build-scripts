@@ -1,4 +1,0 @@
-%rename lib old_lib
-
-*lib:
-    %(old_lib) %:notice(%:concat_sep(\ lol\ %" old_lib: %(old_lib)))

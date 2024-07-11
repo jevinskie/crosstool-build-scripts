@@ -11,4 +11,7 @@
 # ERROR no backtrace symbol
 /opt/gcc/gcc-15-bare/bin/gcc -o standalone-start standalone.c -specs custom.specs -Wextra -Wall -Wpedantic -ggdb3 -Oz -fno-ipa-cp -DNO_MAIN -nostartfiles -nostdlib -shared-libgcc
 
+
+/opt/gcc/gcc-15-bare/bin/gcc -v -Wl,-v -Wextra -Wall -fno-unwind-tables -fno-asynchronous-unwind-tables -fno-exceptions -o hello hello.c fourty-two.c -specs custom.spec -m32 -flto -save-temps
+
 ```
