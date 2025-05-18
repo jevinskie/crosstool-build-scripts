@@ -2,6 +2,7 @@ build-*/
 *.tar.gz
 *.tar.bz2
 *.tar.xz
+*.tar.zst
 Python-*/
 binutils-*/
 gcc-*/

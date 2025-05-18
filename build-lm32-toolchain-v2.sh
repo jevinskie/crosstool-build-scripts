@@ -4,16 +4,15 @@ set -e
 set -x
 
 JEV_GMP=gmp-6.3.0
-JEV_MPFR=mpfr-4.2.1
+JEV_MPFR=mpfr-4.2.2
 JEV_MPC=mpc-1.3.1
-#JEV_GCC=gcc-14.1.0
-# gcc 14.1.0 doesn't build libstdc++ with -fno-rtti but it is fixed on HEAD
-JEV_GCC=gcc-git
-JEV_NEWLIB=newlib-4.4.0.20231231
-JEV_BINUTILS=binutils-2.42
-JEV_GDB=gdb-14.2
-JEV_ISL=isl-0.26
-JEV_PYTHON=3.11.9
+JEV_GCC=gcc-15.1.0
+# JEV_GCC=gcc-git
+JEV_NEWLIB=newlib-4.5.0.20241231
+JEV_BINUTILS=binutils-2.44
+JEV_GDB=gdb-16.3
+JEV_ISL=isl-0.27
+JEV_PYTHON=3.13.3
 
 JEV_XTOOL_PREFIX=/opt/x-tools/lm32-elf
 
@@ -44,17 +43,6 @@ else
    SCRIPT_DIR="$(dirname -- "$(readlink -f -- "$0"; )"; )"
 fi
 
-if [[ -n "${ZSH_VERSION}" ]]; then
-    USING_ZSH=1
-    USING_BASH=0
-elif [[ -n "${BASH_VERSION}" ]]; then
-    USING_BASH=1
-    USING_ZSH=0
-else
-    echo "Only zsh or bash is supported." >&2
-    exit 1
-fi
-
 if [[ "${JEV_GCC}" == "gcc-git" ]]; then
     if [[ ! -d "${GCC_GIT_DIR}" ]]; then
         echo "GCC_GIT_DIR env var must point to gcc git checkout." >&2
@@ -68,13 +56,7 @@ else
 fi
 
 function refresh_path() {
-    if [[ "${USING_ZSH}" -eq 1 ]]; then
-        rehash
-    elif [[ "${USING_BASH}" -eq 1 ]]; then
-        hash -r
-    else
-        echo "Bad shell." >&2
-    fi
+    hash -r
 }
 
 if [[ "${OS}" == "Windows_NT" ]]; then
@@ -114,6 +96,8 @@ else
 fi
 
 mkdir -p "${JEV_XTOOL_PREFIX}/bin"
+mkdir -p "${JEV_XTOOL_PREFIX}/include"
+mkdir -p "${JEV_XTOOL_PREFIX}/lib/pkgconfig"
 
 export PATH="${JEV_XTOOL_PREFIX}/bin:${PATH}"
 export PKG_CONFIG_PATH="${JEV_XTOOL_PREFIX}/lib/pkgconfig:${PKG_CONFIG_PATH}"
@@ -158,7 +142,7 @@ refresh_path
 
 # mpc
 wget -N "${JEV_GNU_MIRROR}/gnu/mpc/${JEV_MPC}.tar.gz"
-rm -rf "${JEV_MPC}" build-mpc V=0
+rm -rf "${JEV_MPC}" build-mpc
 tar xf "${JEV_MPC}.tar.gz"
 mkdir -p build-mpc
 pushd build-mpc
@@ -190,19 +174,24 @@ pushd build-python
 make -j "${NUM_CORES}" all V=0
 make -j "${NUM_CORES}" install V=0
 popd
-ln -f -s "${JEV_XTOOL_PREFIX}/bin/python3" "${JEV_XTOOL_PREFIX}/bin/python"
-ln -f -s "${JEV_XTOOL_PREFIX}/bin/python3-config" "${JEV_XTOOL_PREFIX}/bin/python-config"
+pushd "${JEV_XTOOL_PREFIX}/bin"
+ln -f -s python3 python
+ln -f -s python3-config python-config
+popd
 refresh_path
 
 # binutils
-wget -N "${JEV_GNU_MIRROR}/gnu/binutils/${JEV_BINUTILS}.tar.bz2"
+wget -N "${JEV_GNU_MIRROR}/gnu/binutils/${JEV_BINUTILS}.tar.zst"
 rm -rf "${JEV_BINUTILS}" build-binutils
-tar xf "${JEV_BINUTILS}.tar.bz2"
+tar xf "${JEV_BINUTILS}.tar.zst"
+pushd "${JEV_BINUTILS}"
+sd -F '#if defined(MACOS) || defined(TARGET_OS_MAC)' '#if !defined(__APPLE__) && (defined(MACOS) || defined(TARGET_OS_MAC))' zlib/zutil.h
+popd
 mkdir -p build-binutils
 pushd build-binutils
-../${JEV_BINUTILS}/configure --prefix="${JEV_XTOOL_PREFIX}" --disable-multilib --enable-plugin --enable-lto --enable-languages=c,c++ --target=lm32-elf
-make -j "${NUM_CORES}" all V=0
-make -j "${NUM_CORES}" install V=0
+"../${JEV_BINUTILS}/configure" --prefix="${JEV_XTOOL_PREFIX}" --disable-multilib --enable-plugin --enable-lto --enable-languages=c,c++ --target=lm32-elf
+make -j "${NUM_CORES}" all V=1
+make -j "${NUM_CORES}" install V=1
 popd
 refresh_path
 
@@ -216,6 +205,9 @@ if [[ "${USING_GCC_GIT}" -eq 0 ]]; then
     wget -N "${JEV_GNU_MIRROR}/gnu/gcc/${JEV_GCC}/${JEV_GCC}.tar.xz"
     rm -rf "${GCC_SRC_DIR}"
     tar xf "${JEV_GCC}.tar.xz"
+    pushd "${JEV_GCC}"
+    sd -F '#if defined(MACOS) || defined(TARGET_OS_MAC)' '#if !defined(__APPLE__) && (defined(MACOS) || defined(TARGET_OS_MAC))' zlib/zutil.h
+    popd
 fi
 rm -rf build-gcc
 
@@ -244,12 +236,23 @@ refresh_path
 
 # gdb
 wget -N ${JEV_GNU_MIRROR}/gnu/gdb/${JEV_GDB}.tar.xz
-rm -rf ${JEV_GDB} build-gdb
-tar xf ${JEV_GDB}.tar.xz
+rm -rf "${JEV_GDB}" build-gdb
+tar xf "${JEV_GDB}.tar.xz"
+pushd "${JEV_GDB}"
+sd -F '#if defined(MACOS) || defined(TARGET_OS_MAC)' '#if !defined(__APPLE__) && (defined(MACOS) || defined(TARGET_OS_MAC))' zlib/zutil.h
+popd
 mkdir -p build-gdb
 pushd build-gdb
-../${JEV_GDB}/configure --prefix=${JEV_XTOOL_PREFIX} --disable-guile --enable-python --enable-sim --enable-tui --enable-languages=c,c++ --target=lm32-elf
+"../${JEV_GDB}/configure" --prefix="${JEV_XTOOL_PREFIX}" --disable-guile --enable-python --enable-sim --enable-tui --enable-languages=c,c++ --target=lm32-elf
 make -j "${NUM_CORES}" all V=0
 make -j "${NUM_CORES}" install V=0
 popd
 refresh_path
+
+pushd "${JEV_XTOOL_PREFIX}/bin"
+rm -f python python-config
+mv python3 lm32-elf-python3
+mv python3-config lm32-elf-python3-config
+ln -s -f lm32-elf-python3 lm32-elf-python
+ln -s -f lm32-elf-python3-config lm32-elf-python-config
+popd
