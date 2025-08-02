@@ -114,7 +114,7 @@ fi
 mkdir -p "${JEV_XTOOL_PREFIX}/bin"
 mkdir -p "${JEV_XTOOL_PREFIX}/include"
 mkdir -p "${JEV_XTOOL_PREFIX}/lib/pkgconfig"
-mkdir -p "${JEV_XTOOL_PREFIX}/${JEV_TARGET}"
+# mkdir -p "${JEV_XTOOL_PREFIX}/${JEV_TARGET}"
 
 export PATH="${JEV_XTOOL_PREFIX}/bin:${PATH}"
 export PKG_CONFIG_PATH="${JEV_XTOOL_PREFIX}/lib/pkgconfig:${PKG_CONFIG_PATH}"
@@ -127,12 +127,18 @@ export CXXFLAGS_FOR_TARGET="${CFLAGS_FOR_TARGET} -fno-rtti"
 export LDFLAGS_FOR_TARGET="-Oz -fno-unwind-tables -fno-asynchronous-unwind-tables -fno-exceptions -ffunction-sections -fdata-sections -fvisibility=hidden -Wl,--gc-sections"
 JEV_LIBSTDCXX_FLAGS="-Oz -g -fno-unwind-tables -fno-asynchronous-unwind-tables -fno-exceptions -fomit-frame-pointer -ffunction-sections -fdata-sections -fvisibility=hidden -fno-rtti"
 
-export CFLAGS="${CFLAGS} -Wno-deprecated-declarations -Wnodeprecated-non-prototype"
-export CXXFLAGS="${CXXFLAGS} -Wno-deprecated-declarations"
+export CFLAGS="${CFLAGS} -Wno-deprecated-declarations -Wno-deprecated-non-prototype"
+export CXXFLAGS="${CXXFLAGS} -Wno-deprecated-declarations -Wno-mismatched-tags"
 
 JEV_GNU_MIRROR=https://ftp.gnu.org
 
 NUM_CORES=$(nproc)
+
+if false; then
+    SYSROOT_CONF=""
+else
+    SYSROOT_CONF="--with-sysroot='${JEV_XTOOL_PREFIX}/${JEV_TARGET}'"
+fi
 
 refresh_path
 
@@ -247,7 +253,7 @@ build_gcc_stage0() {
     rm -rf build-gcc
     mkdir -p build-gcc
     pushd build-gcc
-    "${GCC_SRC_DIR}/configure" --prefix="${JEV_XTOOL_PREFIX}" --with-sysroot="${JEV_XTOOL_PREFIX}/${JEV_TARGET}" --disable-bootstrap --disable-shared --disable-multilib --disable-threads --disable-tls --disable-tm-clone-registry --enable-lto --without-headers --with-gnu-as --with-gnu-ld --enable-cxx-flags="${JEV_LIBSTDCXX_FLAGS}" --enable-languages=c,c++ --build=aarch64-apple-darwin --host=aarch64-apple-darwin --target=${JEV_TARGET}
+    "${GCC_SRC_DIR}/configure" --prefix="${JEV_XTOOL_PREFIX}" $SYSROOT_CONF --disable-bootstrap --disable-shared --disable-multilib --disable-threads --disable-tls --disable-tm-clone-registry --enable-lto --without-headers --with-gnu-as --with-gnu-ld --enable-cxx-flags="${JEV_LIBSTDCXX_FLAGS}" --enable-languages=c,c++ --build=aarch64-apple-darwin --host=aarch64-apple-darwin --target=${JEV_TARGET}
     make -j "${NUM_CORES}" all-gcc V=0
     make -j "${NUM_CORES}" install-gcc V=0
     popd
@@ -275,7 +281,7 @@ build_picolibc() {
     rm -rf "${JEV_PICOLIBC}"
     tar xf "${JEV_PICOLIBC}.tar.xz"
     rm -rf build-picolibc
-    meson setup --cross-file "${JEV_PICOLIBC}/scripts/cross-powerpc64-linux-gnu.txt" --prefix "${JEV_XTOOL_PREFIX}/${JEV_TARGET}" build-picolibc "${JEV_PICOLIBC}"
+    meson setup --cross-file "${JEV_PICOLIBC}/scripts/cross-powerpc64-linux-gnu.txt" --prefix "${JEV_XTOOL_PREFIX}" build-picolibc "${JEV_PICOLIBC}"
     meson compile -C build-picolibc
     meson install -C build-picolibc
     refresh_path
@@ -283,7 +289,7 @@ build_picolibc() {
 
 build_gcc_stage1() {
     pushd build-gcc
-    "${GCC_SRC_DIR}/configure" --prefix="${JEV_XTOOL_PREFIX}" --with-sysroot="${JEV_XTOOL_PREFIX}/${JEV_TARGET}" --disable-bootstrap --disable-shared --disable-multilib --disable-threads --disable-tls --disable-tm-clone-registry --enable-lto --with-gnu-as --with-gnu-ld --enable-cxx-flags="${JEV_LIBSTDCXX_FLAGS}" --enable-languages=c,c++ --build=aarch64-apple-darwin --host=aarch64-apple-darwin --target=${JEV_TARGET}
+    "${GCC_SRC_DIR}/configure" --prefix="${JEV_XTOOL_PREFIX}" $SYSROOT_CONF --disable-bootstrap --disable-shared --disable-nls --disable-multilib --disable-threads --disable-tls --disable-tm-clone-registry --enable-lto --with-gnu-as --with-gnu-ld --enable-cxx-flags="${JEV_LIBSTDCXX_FLAGS}" --enable-languages=c,c++ --build=aarch64-apple-darwin --host=aarch64-apple-darwin --target=${JEV_TARGET}
     make -j "${NUM_CORES}" all V=0
     make -j "${NUM_CORES}" install V=0
     popd
@@ -302,7 +308,7 @@ build_gdb() {
     popd
     mkdir -p build-gdb
     pushd build-gdb
-    "../${JEV_GDB}/configure" --prefix="${JEV_XTOOL_PREFIX}" --with-sysroot="${JEV_XTOOL_PREFIX}/${JEV_TARGET}" --disable-guile --enable-python --enable-sim --enable-tui --enable-languages=c,c++ --build=aarch64-apple-darwin --host=aarch64-apple-darwin --target=${JEV_TARGET}
+    "../${JEV_GDB}/configure" --prefix="${JEV_XTOOL_PREFIX}" $SYSROOT_CONF --disable-nls --disable-guile --enable-python --enable-sim --enable-tui --enable-languages=c,c++ --build=aarch64-apple-darwin --host=aarch64-apple-darwin --target=${JEV_TARGET}
     make -j "${NUM_CORES}" all V=0
     make -j "${NUM_CORES}" install V=0
     popd
