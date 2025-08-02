@@ -3,18 +3,31 @@
 set -e
 set -x
 
-JEV_GMP=gmp-6.3.0
-JEV_MPFR=mpfr-4.2.2
-JEV_MPC=mpc-1.3.1
-JEV_GCC=gcc-15.1.0
-# JEV_GCC=gcc-git
-JEV_NEWLIB=newlib-4.5.0.20241231
-JEV_BINUTILS=binutils-2.44
-JEV_GDB=gdb-16.3
-JEV_ISL=isl-0.27
-JEV_PYTHON=3.13.3
+JEV_TARGET=powerpc64-linux-gnu
 
-JEV_XTOOL_PREFIX=/opt/x-tools/lm32-elf
+# https://repology.org/project/gmp/information
+JEV_GMP=gmp-6.3.0
+# https://repology.org/project/mpfr/information
+JEV_MPFR=mpfr-4.2.2
+# https://repology.org/project/gnumpc/information
+JEV_MPC=mpc-1.3.1
+# https://repology.org/project/gcc/information
+JEV_GCC=gcc-15.1.1
+# JEV_GCC=gcc-git
+# https://repology.org/project/newlib/information
+# https://sourceware.org/ftp/newlib/index.html
+JEV_NEWLIB=newlib-4.5.0.20241231
+# https://repology.org/project/binutils/information
+JEV_BINUTILS=binutils-2.44
+# https://repology.org/project/gdb/information
+JEV_GDB=gdb-16.3
+# https://repology.org/project/isl/information
+JEV_ISL=isl-0.27
+# https://repology.org/project/python/information
+JEV_PYTHON=3.13.5
+
+
+JEV_XTOOL_PREFIX=/opt/x-tools/ppc64-elf
 
 if [[ "${OS}" == "Windows_NT" ]]; then
     echo "Windows not supported yet" >&2
@@ -67,7 +80,7 @@ else
     case "${UNAME_S}" in
         Darwin)
             if type brew &>/dev/null; then
-                brew install autoconf automake libtool make pkg-config gnu-tar openssl readline sqlite3 xz zstd zlib bzip2 texinfo tcl-tk flex bison xxhash
+                # brew install autoconf automake libtool make pkg-config gnu-tar openssl readline sqlite3 xz zstd zlib bzip2 texinfo tcl-tk flex bison xxhash
                 JEV_BREW_ROOT=$(brew --prefix)
                 export PATH="${JEV_BREW_ROOT}/bin:${PATH}"
                 export PKG_CONFIG_PATH="${JEV_BREW_ROOT}/lib/pkgconfig:${PKG_CONFIG_PATH}"
@@ -105,10 +118,10 @@ export LDFLAGS="-L${JEV_XTOOL_PREFIX}/lib -Wl,-rpath,${JEV_XTOOL_PREFIX}/lib ${L
 export CPPFLAGS="-I${JEV_XTOOL_PREFIX}/include ${CPPFLAGS}"
 export CFLAGS="${CPPFLAGS} -Wno-error"
 export CXXFLAGS="${CPPFLAGS} -Wno-error"
-export CFLAGS_FOR_TARGET="-DPREFER_SIZE_OVER_SPEED=1 -DSMALL_MEMORY=1 -DSMALL_DTOA=1 -mbarrel-shift-enabled -mmultiply-enabled -mdivide-enabled -msign-extend-enabled -Oz -g -fno-unwind-tables -fno-asynchronous-unwind-tables -fno-exceptions -fomit-frame-pointer -ffunction-sections -fdata-sections -fvisibility=hidden"
+export CFLAGS_FOR_TARGET="-DPREFER_SIZE_OVER_SPEED=1 -DSMALL_MEMORY=1 -DSMALL_DTOA=1 -Oz -g -fno-unwind-tables -fno-asynchronous-unwind-tables -fno-exceptions -fomit-frame-pointer -ffunction-sections -fdata-sections -fvisibility=hidden"
 export CXXFLAGS_FOR_TARGET="${CFLAGS_FOR_TARGET} -fno-rtti"
 export LDFLAGS_FOR_TARGET="-Oz -fno-unwind-tables -fno-asynchronous-unwind-tables -fno-exceptions -ffunction-sections -fdata-sections -fvisibility=hidden -Wl,--gc-sections"
-JEV_LIBSTDCXX_FLAGS="-mbarrel-shift-enabled -mmultiply-enabled -mdivide-enabled -msign-extend-enabled -Oz -g -fno-unwind-tables -fno-asynchronous-unwind-tables -fno-exceptions -fomit-frame-pointer -ffunction-sections -fdata-sections -fvisibility=hidden -fno-rtti"
+JEV_LIBSTDCXX_FLAGS="-Oz -g -fno-unwind-tables -fno-asynchronous-unwind-tables -fno-exceptions -fomit-frame-pointer -ffunction-sections -fdata-sections -fvisibility=hidden -fno-rtti"
 
 JEV_GNU_MIRROR=https://ftp.gnu.org
 
@@ -189,7 +202,7 @@ sd -F '#if defined(MACOS) || defined(TARGET_OS_MAC)' '#if !defined(__APPLE__) &&
 popd
 mkdir -p build-binutils
 pushd build-binutils
-"../${JEV_BINUTILS}/configure" --prefix="${JEV_XTOOL_PREFIX}" --disable-multilib --enable-plugin --enable-lto --enable-languages=c,c++ --target=lm32-elf
+"../${JEV_BINUTILS}/configure" --prefix="${JEV_XTOOL_PREFIX}" --disable-multilib --enable-plugin --enable-lto --enable-languages=c,c++ --target=${JEV_TARGET}
 make -j "${NUM_CORES}" all V=1
 make -j "${NUM_CORES}" install V=1
 popd
@@ -213,7 +226,7 @@ rm -rf build-gcc
 
 mkdir -p build-gcc
 pushd build-gcc
-"${GCC_SRC_DIR}/configure" --prefix="${JEV_XTOOL_PREFIX}" --disable-shared --disable-multilib --disable-threads --disable-tls --enable-lto --enable-languages=c,c++ --target=lm32-elf --without-headers --with-newlib --with-gnu-as --with-gnu-ld --disable-tm-clone-registry --enable-cxx-flags="${JEV_LIBSTDCXX_FLAGS}"
+"${GCC_SRC_DIR}/configure" --prefix="${JEV_XTOOL_PREFIX}" --disable-shared --disable-multilib --disable-threads --disable-tls --enable-lto --enable-languages=c,c++ --target=${JEV_TARGET} --without-headers --with-newlib --with-gnu-as --with-gnu-ld --disable-tm-clone-registry --enable-cxx-flags="${JEV_LIBSTDCXX_FLAGS}"
 make -j "${NUM_CORES}" all-gcc V=0
 make -j "${NUM_CORES}" install-gcc V=0
 popd
@@ -221,14 +234,14 @@ refresh_path
 
 mkdir -p build-newlib
 pushd build-newlib
-../${JEV_NEWLIB}/configure --disable-shared --disable-multilib --target=lm32-elf --prefix="${JEV_XTOOL_PREFIX}"
+../${JEV_NEWLIB}/configure --disable-shared --disable-multilib --target=${JEV_TARGET} --prefix="${JEV_XTOOL_PREFIX}"
 make -j "${NUM_CORES}" all V=0
 make -j "${NUM_CORES}" install V=0
 popd
 refresh_path
 
 pushd build-gcc
-"${GCC_SRC_DIR}/configure" --prefix="${JEV_XTOOL_PREFIX}" --disable-shared --disable-multilib --disable-threads --disable-tls --enable-lto --enable-languages=c,c++ --target=lm32-elf --with-newlib --with-gnu-as --with-gnu-ld --enable-cxx-flags="${JEV_LIBSTDCXX_FLAGS}"
+"${GCC_SRC_DIR}/configure" --prefix="${JEV_XTOOL_PREFIX}" --disable-shared --disable-multilib --disable-threads --disable-tls --enable-lto --enable-languages=c,c++ --target=${JEV_TARGET} --with-newlib --with-gnu-as --with-gnu-ld --enable-cxx-flags="${JEV_LIBSTDCXX_FLAGS}"
 make -j "${NUM_CORES}" all V=0
 make -j "${NUM_CORES}" install V=0
 popd
@@ -243,7 +256,7 @@ sd -F '#if defined(MACOS) || defined(TARGET_OS_MAC)' '#if !defined(__APPLE__) &&
 popd
 mkdir -p build-gdb
 pushd build-gdb
-"../${JEV_GDB}/configure" --prefix="${JEV_XTOOL_PREFIX}" --disable-guile --enable-python --enable-sim --enable-tui --enable-languages=c,c++ --target=lm32-elf
+"../${JEV_GDB}/configure" --prefix="${JEV_XTOOL_PREFIX}" --disable-guile --enable-python --enable-sim --enable-tui --enable-languages=c,c++ --target=${JEV_TARGET}
 make -j "${NUM_CORES}" all V=0
 make -j "${NUM_CORES}" install V=0
 popd
@@ -251,8 +264,8 @@ refresh_path
 
 pushd "${JEV_XTOOL_PREFIX}/bin"
 rm -f python python-config
-mv python3 lm32-elf-python3
-mv python3-config lm32-elf-python3-config
-ln -s -f lm32-elf-python3 lm32-elf-python
-ln -s -f lm32-elf-python3-config lm32-elf-python-config
+mv python3 ${JEV_TARGET}-python3
+mv python3-config ${JEV_TARGET}-python3-config
+ln -s -f ${JEV_TARGET}-python3 ${JEV_TARGET}-python
+ln -s -f ${JEV_TARGET}-python3-config ${JEV_TARGET}-python-config
 popd
