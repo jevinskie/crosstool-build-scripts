@@ -12,11 +12,14 @@ JEV_MPFR=mpfr-4.2.2
 # https://repology.org/project/gnumpc/information
 JEV_MPC=mpc-1.3.1
 # https://repology.org/project/gcc/information
-JEV_GCC=gcc-15.1.1
+JEV_GCC=gcc-15.1.0
 # JEV_GCC=gcc-git
 # https://repology.org/project/newlib/information
 # https://sourceware.org/ftp/newlib/index.html
-JEV_NEWLIB=newlib-4.5.0.20241231
+# JEV_NEWLIB=newlib-4.5.0.20241231
+# https://github.com/picolibc/picolibc/releases
+JEV_PICOLIBC_VERSION=1.8.10
+JEV_PICOLIBC=picolibc-${JEV_PICOLIBC_VERSION}
 # https://repology.org/project/binutils/information
 JEV_BINUTILS=binutils-2.44
 # https://repology.org/project/gdb/information
@@ -130,142 +133,197 @@ NUM_CORES=$(nproc)
 refresh_path
 
 # gmp
-wget -N "${JEV_GNU_MIRROR}/gnu/gmp/${JEV_GMP}.tar.xz"
-rm -rf "${JEV_GMP}" build-gmp
-tar xf "${JEV_GMP}.tar.xz"
-mkdir -p build-gmp
-pushd build-gmp
-../${JEV_GMP}/configure --prefix="${JEV_XTOOL_PREFIX}" CPPFLAGS="${CPPFLAGS}" CFLAGS="${CFLAGS}" "CXXFLAGS=${CXXFLAGS}" LDFLAGS="${LDFLAGS}"
-make -j "${NUM_CORES}" all V=0
-make -j "${NUM_CORES}" install V=0
-popd
-refresh_path
+build_gmp() {
+    wget -N "${JEV_GNU_MIRROR}/gnu/gmp/${JEV_GMP}.tar.xz"
+    rm -rf "${JEV_GMP}" build-gmp
+    tar xf "${JEV_GMP}.tar.xz"
+    mkdir -p build-gmp
+    pushd build-gmp
+    ../${JEV_GMP}/configure --prefix="${JEV_XTOOL_PREFIX}" CPPFLAGS="${CPPFLAGS}" CFLAGS="${CFLAGS}" "CXXFLAGS=${CXXFLAGS}" LDFLAGS="${LDFLAGS}"
+    make -j "${NUM_CORES}" all V=0
+    make -j "${NUM_CORES}" install V=0
+    popd
+    refresh_path
+}
 
 # mpfr
-wget -N "${JEV_GNU_MIRROR}/gnu/mpfr/${JEV_MPFR}.tar.xz"
-rm -rf "${JEV_MPFR}" build-mfr
-tar xf "${JEV_MPFR}.tar.xz"
-mkdir -p build-mpfr
-pushd build-mpfr
-../${JEV_MPFR}/configure --prefix="${JEV_XTOOL_PREFIX}"
-make -j "${NUM_CORES}" all V=0
-make -j "${NUM_CORES}" install V=0
-popd
-refresh_path
+build_mpfr() {
+    wget -N "${JEV_GNU_MIRROR}/gnu/mpfr/${JEV_MPFR}.tar.xz"
+    rm -rf "${JEV_MPFR}" build-mfr
+    tar xf "${JEV_MPFR}.tar.xz"
+    mkdir -p build-mpfr
+    pushd build-mpfr
+    ../${JEV_MPFR}/configure --prefix="${JEV_XTOOL_PREFIX}"
+    make -j "${NUM_CORES}" all V=0
+    make -j "${NUM_CORES}" install V=0
+    popd
+    refresh_path
+}
 
 # mpc
-wget -N "${JEV_GNU_MIRROR}/gnu/mpc/${JEV_MPC}.tar.gz"
-rm -rf "${JEV_MPC}" build-mpc
-tar xf "${JEV_MPC}.tar.gz"
-mkdir -p build-mpc
-pushd build-mpc
-../${JEV_MPC}/configure --prefix="${JEV_XTOOL_PREFIX}"
-make -j "${NUM_CORES}" all V=0
-make -j "${NUM_CORES}" install V=0
-popd
-refresh_path
+build_mpc() {
+    wget -N "${JEV_GNU_MIRROR}/gnu/mpc/${JEV_MPC}.tar.gz"
+    rm -rf "${JEV_MPC}" build-mpc
+    tar xf "${JEV_MPC}.tar.gz"
+    mkdir -p build-mpc
+    pushd build-mpc
+    ../${JEV_MPC}/configure --prefix="${JEV_XTOOL_PREFIX}"
+    make -j "${NUM_CORES}" all V=0
+    make -j "${NUM_CORES}" install V=0
+    popd
+    refresh_path
+}
 
 # isl
-wget -N "https://libisl.sourceforge.io/${JEV_ISL}.tar.xz"
-rm -rf "${JEV_ISL}" build-isl
-tar xf "${JEV_ISL}.tar.xz"
-mkdir -p build-isl
-pushd build-isl
-../${JEV_ISL}/configure --prefix="${JEV_XTOOL_PREFIX}"
-make -j "${NUM_CORES}" all V=0
-make -j "${NUM_CORES}" install V=0
-popd
-refresh_path
+build_isl() {
+    wget -N "https://libisl.sourceforge.io/${JEV_ISL}.tar.xz"
+    rm -rf "${JEV_ISL}" build-isl
+    tar xf "${JEV_ISL}.tar.xz"
+    mkdir -p build-isl
+    pushd build-isl
+    ../${JEV_ISL}/configure --prefix="${JEV_XTOOL_PREFIX}"
+    make -j "${NUM_CORES}" all V=0
+    make -j "${NUM_CORES}" install V=0
+    popd
+    refresh_path
+}
 
 # python
-wget -N "https://www.python.org/ftp/python/${JEV_PYTHON}/Python-${JEV_PYTHON}.tar.xz"
-rm -rf "${JEV_PYTHON}" build-python
-tar xf "Python-${JEV_PYTHON}.tar.xz"
-mkdir -p build-python
-pushd build-python
-../Python-${JEV_PYTHON}/configure --prefix="${JEV_XTOOL_PREFIX}" --enable-shared
-make -j "${NUM_CORES}" all V=0
-make -j "${NUM_CORES}" install V=0
-popd
-pushd "${JEV_XTOOL_PREFIX}/bin"
-ln -f -s python3 python
-ln -f -s python3-config python-config
-popd
-refresh_path
+build_python() {
+    wget -N "https://www.python.org/ftp/python/${JEV_PYTHON}/Python-${JEV_PYTHON}.tar.xz"
+    rm -rf "${JEV_PYTHON}" build-python
+    tar xf "Python-${JEV_PYTHON}.tar.xz"
+    mkdir -p build-python
+    pushd build-python
+    ../Python-${JEV_PYTHON}/configure --prefix="${JEV_XTOOL_PREFIX}" --enable-shared
+    make -j "${NUM_CORES}" all V=0
+    make -j "${NUM_CORES}" install V=0
+    popd
+    pushd "${JEV_XTOOL_PREFIX}/bin"
+    ln -f -s python3 python
+    ln -f -s python3-config python-config
+    popd
+    refresh_path
+}
 
 # binutils
-wget -N "${JEV_GNU_MIRROR}/gnu/binutils/${JEV_BINUTILS}.tar.zst"
-rm -rf "${JEV_BINUTILS}" build-binutils
-tar xf "${JEV_BINUTILS}.tar.zst"
-pushd "${JEV_BINUTILS}"
-sd -F '#if defined(MACOS) || defined(TARGET_OS_MAC)' '#if !defined(__APPLE__) && (defined(MACOS) || defined(TARGET_OS_MAC))' zlib/zutil.h
-popd
-mkdir -p build-binutils
-pushd build-binutils
-"../${JEV_BINUTILS}/configure" --prefix="${JEV_XTOOL_PREFIX}" --disable-multilib --enable-plugin --enable-lto --enable-languages=c,c++ --target=${JEV_TARGET}
-make -j "${NUM_CORES}" all V=1
-make -j "${NUM_CORES}" install V=1
-popd
-refresh_path
-
-# newlib
-wget -N "https://sourceware.org/pub/newlib/${JEV_NEWLIB}.tar.gz"
-rm -rf "${JEV_NEWLIB}" build-newlib
-tar xf "${JEV_NEWLIB}.tar.gz"
-
-# gcc
-if [[ "${USING_GCC_GIT}" -eq 0 ]]; then
-    wget -N "${JEV_GNU_MIRROR}/gnu/gcc/${JEV_GCC}/${JEV_GCC}.tar.xz"
-    rm -rf "${GCC_SRC_DIR}"
-    tar xf "${JEV_GCC}.tar.xz"
-    pushd "${JEV_GCC}"
+build_binutils() {
+    wget -N "${JEV_GNU_MIRROR}/gnu/binutils/${JEV_BINUTILS}.tar.zst"
+    rm -rf "${JEV_BINUTILS}" build-binutils
+    tar xf "${JEV_BINUTILS}.tar.zst"
+    pushd "${JEV_BINUTILS}"
     sd -F '#if defined(MACOS) || defined(TARGET_OS_MAC)' '#if !defined(__APPLE__) && (defined(MACOS) || defined(TARGET_OS_MAC))' zlib/zutil.h
     popd
-fi
-rm -rf build-gcc
+    mkdir -p build-binutils
+    pushd build-binutils
+    "../${JEV_BINUTILS}/configure" --prefix="${JEV_XTOOL_PREFIX}" --disable-multilib --enable-plugin --enable-lto --enable-languages=c,c++ --target=${JEV_TARGET}
+    make -j "${NUM_CORES}" all V=1
+    make -j "${NUM_CORES}" install V=1
+    popd
+    refresh_path
+}
 
-mkdir -p build-gcc
-pushd build-gcc
-"${GCC_SRC_DIR}/configure" --prefix="${JEV_XTOOL_PREFIX}" --disable-shared --disable-multilib --disable-threads --disable-tls --enable-lto --enable-languages=c,c++ --target=${JEV_TARGET} --without-headers --with-newlib --with-gnu-as --with-gnu-ld --disable-tm-clone-registry --enable-cxx-flags="${JEV_LIBSTDCXX_FLAGS}"
-make -j "${NUM_CORES}" all-gcc V=0
-make -j "${NUM_CORES}" install-gcc V=0
-popd
-refresh_path
+# newlib
+build_newlib_stage0() {
+    wget -N "https://sourceware.org/pub/newlib/${JEV_NEWLIB}.tar.gz"
+    rm -rf "${JEV_NEWLIB}" build-newlib
+    tar xf "${JEV_NEWLIB}.tar.gz"
+}
 
-mkdir -p build-newlib
-pushd build-newlib
-../${JEV_NEWLIB}/configure --disable-shared --disable-multilib --target=${JEV_TARGET} --prefix="${JEV_XTOOL_PREFIX}"
-make -j "${NUM_CORES}" all V=0
-make -j "${NUM_CORES}" install V=0
-popd
-refresh_path
+# picolibc
+build_picolib_stage0() {
+    wget -N "https://github.com/picolibc/picolibc/releases/download/${JEV_PICOLIBC_VERSION}/${JEV_PICOLIBC}.tar.xz"
+    rm -rf "${JEV_PICOLIBC}" build-picolibc
+    tar xf "${JEV_PICOLIBC}.tar.xz"
+}
 
-pushd build-gcc
-"${GCC_SRC_DIR}/configure" --prefix="${JEV_XTOOL_PREFIX}" --disable-shared --disable-multilib --disable-threads --disable-tls --enable-lto --enable-languages=c,c++ --target=${JEV_TARGET} --with-newlib --with-gnu-as --with-gnu-ld --enable-cxx-flags="${JEV_LIBSTDCXX_FLAGS}"
-make -j "${NUM_CORES}" all V=0
-make -j "${NUM_CORES}" install V=0
-popd
-refresh_path
+# gcc
+build_gcc_stage0() {
+    if [[ "${USING_GCC_GIT}" -eq 0 ]]; then
+        wget -N "${JEV_GNU_MIRROR}/gnu/gcc/${JEV_GCC}/${JEV_GCC}.tar.xz"
+        rm -rf "${GCC_SRC_DIR}"
+        tar xf "${JEV_GCC}.tar.xz"
+        pushd "${JEV_GCC}"
+        sd -F '#if defined(MACOS) || defined(TARGET_OS_MAC)' '#if !defined(__APPLE__) && (defined(MACOS) || defined(TARGET_OS_MAC))' zlib/zutil.h
+        popd
+    fi
+    rm -rf build-gcc
+
+    mkdir -p build-gcc
+    pushd build-gcc
+    "${GCC_SRC_DIR}/configure" --prefix="${JEV_XTOOL_PREFIX}" --disable-shared --disable-multilib --disable-threads --disable-tls --enable-lto --enable-languages=c,c++ --target=${JEV_TARGET} --without-headers --with-newlib --with-gnu-as --with-gnu-ld --disable-tm-clone-registry --enable-cxx-flags="${JEV_LIBSTDCXX_FLAGS}"
+    make -j "${NUM_CORES}" all-gcc V=0
+    make -j "${NUM_CORES}" install-gcc V=0
+    popd
+    refresh_path
+}
+
+build_newlib_stage1() {
+    mkdir -p build-newlib
+    pushd build-newlib
+    ../${JEV_NEWLIB}/configure --disable-shared --disable-multilib --target=${JEV_TARGET} --prefix="${JEV_XTOOL_PREFIX}"
+    make -j "${NUM_CORES}" all V=0
+    make -j "${NUM_CORES}" install V=0
+    popd
+    refresh_path
+}
+
+build_picolibc_stage1() {
+    mkdir -p build-picolibc
+    pushd build-picolibc
+    ../${JEV_PICOLIBC}/configure --disable-shared --disable-multilib --target=${JEV_TARGET} --prefix="${JEV_XTOOL_PREFIX}"
+    make -j "${NUM_CORES}" all V=0
+    make -j "${NUM_CORES}" install V=0
+    popd
+    refresh_path
+}
+
+build_gcc_stage1() {
+    pushd build-gcc
+    "${GCC_SRC_DIR}/configure" --prefix="${JEV_XTOOL_PREFIX}" --disable-shared --disable-multilib --disable-threads --disable-tls --enable-lto --enable-languages=c,c++ --target=${JEV_TARGET} --with-newlib --with-gnu-as --with-gnu-ld --enable-cxx-flags="${JEV_LIBSTDCXX_FLAGS}"
+    make -j "${NUM_CORES}" all V=0
+    make -j "${NUM_CORES}" install V=0
+    popd
+    refresh_path
+}
 
 # gdb
-wget -N ${JEV_GNU_MIRROR}/gnu/gdb/${JEV_GDB}.tar.xz
-rm -rf "${JEV_GDB}" build-gdb
-tar xf "${JEV_GDB}.tar.xz"
-pushd "${JEV_GDB}"
-sd -F '#if defined(MACOS) || defined(TARGET_OS_MAC)' '#if !defined(__APPLE__) && (defined(MACOS) || defined(TARGET_OS_MAC))' zlib/zutil.h
-popd
-mkdir -p build-gdb
-pushd build-gdb
-"../${JEV_GDB}/configure" --prefix="${JEV_XTOOL_PREFIX}" --disable-guile --enable-python --enable-sim --enable-tui --enable-languages=c,c++ --target=${JEV_TARGET}
-make -j "${NUM_CORES}" all V=0
-make -j "${NUM_CORES}" install V=0
-popd
-refresh_path
+build_gdb() {
+    wget -N ${JEV_GNU_MIRROR}/gnu/gdb/${JEV_GDB}.tar.xz
+    rm -rf "${JEV_GDB}" build-gdb
+    tar xf "${JEV_GDB}.tar.xz"
+    pushd "${JEV_GDB}"
+    sd -F '#if defined(MACOS) || defined(TARGET_OS_MAC)' '#if !defined(__APPLE__) && (defined(MACOS) || defined(TARGET_OS_MAC))' zlib/zutil.h
+    popd
+    mkdir -p build-gdb
+    pushd build-gdb
+    "../${JEV_GDB}/configure" --prefix="${JEV_XTOOL_PREFIX}" --disable-guile --enable-python --enable-sim --enable-tui --enable-languages=c,c++ --target=${JEV_TARGET}
+    make -j "${NUM_CORES}" all V=0
+    make -j "${NUM_CORES}" install V=0
+    popd
+    refresh_path
+}
 
-pushd "${JEV_XTOOL_PREFIX}/bin"
-rm -f python python-config
-mv python3 ${JEV_TARGET}-python3
-mv python3-config ${JEV_TARGET}-python3-config
-ln -s -f ${JEV_TARGET}-python3 ${JEV_TARGET}-python
-ln -s -f ${JEV_TARGET}-python3-config ${JEV_TARGET}-python-config
-popd
+build_python_stage1() {
+    pushd "${JEV_XTOOL_PREFIX}/bin"
+    rm -f python python-config
+    mv python3 ${JEV_TARGET}-python3
+    mv python3-config ${JEV_TARGET}-python3-config
+    ln -s -f ${JEV_TARGET}-python3 ${JEV_TARGET}-python
+    ln -s -f ${JEV_TARGET}-python3-config ${JEV_TARGET}-python-config
+    popd
+}
+
+build_gmp
+build_mpfr
+build_mpc
+build_isl
+build_python
+build_binutils
+# build_newlib_stage0
+build_picolib_stage0
+build_gcc_stage0
+# build_newlib_stage1
+build_picolibc_stage1
+build_gcc_stage1
+build_python_stage1
