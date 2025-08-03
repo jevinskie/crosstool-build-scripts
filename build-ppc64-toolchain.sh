@@ -34,7 +34,7 @@ JEV_PYTHON=3.13.5
 
 
 JEV_XTOOL_PREFIX=/opt/x-tools/ppc64-elf
-JEV_XTOOL_SYSROOT="${JEV_XTOOL_PREFIX}/${JEV_TARGET}"
+JEV_XTOOL_SYSROOT="${JEV_XTOOL_PREFIX}/${JEV_TARGET}/sysroot"
 
 
 if [[ "${OS}" == "Windows_NT" ]]; then
@@ -127,19 +127,22 @@ export LDFLAGS="-L${JEV_XTOOL_PREFIX}/lib -Wl,-rpath,${JEV_XTOOL_PREFIX}/lib ${L
 export CPPFLAGS="-I${JEV_XTOOL_PREFIX}/include ${CPPFLAGS}"
 export CFLAGS="${CPPFLAGS} -Wno-error"
 export CXXFLAGS="${CPPFLAGS} -Wno-error"
+
+export C_CXX_EXTRA_FLAGS="-Wno-deprecated-declarations -Wno-deprecated-non-prototype -Wno-deprecated-declarations -Wno-mismatched-tags -Wno-unknown-warning-option"
+export CFLAGS="${CFLAGS} ${C_CXX_EXTRA_FLAGS}"
+export CXXFLAGS="${CXXFLAGS} ${C_CXX_EXTRA_FLAGS}"
+
+
 export CFLAGS_FOR_TARGET="-DPREFER_SIZE_OVER_SPEED=1 -DSMALL_MEMORY=1 -DSMALL_DTOA=1 -Oz -g -fno-unwind-tables -fno-asynchronous-unwind-tables -fno-exceptions -fomit-frame-pointer -ffunction-sections -fdata-sections -fvisibility=hidden -isystem ${JEV_XTOOL_SYSROOT}"
 export CXXFLAGS_FOR_TARGET="${CFLAGS_FOR_TARGET} -fno-rtti"
 export LDFLAGS_FOR_TARGET="-Oz -fno-unwind-tables -fno-asynchronous-unwind-tables -fno-exceptions -ffunction-sections -fdata-sections -fvisibility=hidden -Wl,--gc-sections"
 JEV_LIBSTDCXX_FLAGS="-Oz -g -fno-unwind-tables -fno-asynchronous-unwind-tables -fno-exceptions -fomit-frame-pointer -ffunction-sections -fdata-sections -fvisibility=hidden -fno-rtti"
 
-export CFLAGS="${CFLAGS} -Wno-deprecated-declarations -Wno-deprecated-non-prototype"
-export CXXFLAGS="${CXXFLAGS} -Wno-deprecated-declarations -Wno-mismatched-tags"
-
 JEV_GNU_MIRROR=https://ftp.gnu.org
 
 NUM_CORES=$(nproc)
 
-if true; then
+if false; then
     SYSROOT_CONF=""
 else
     SYSROOT_CONF="--with-sysroot=${JEV_XTOOL_SYSROOT}"
@@ -252,7 +255,7 @@ build_binutils() {
     rm -rf build-binutils
     mkdir -p build-binutils
     pushd build-binutils
-    "../${JEV_BINUTILS}/configure" --prefix="${JEV_XTOOL_PREFIX}" --disable-maintainer-mode --disable-multilib --disable-nls --enable-plugin --enable-lto --enable-languages=c,c++ --target=${JEV_TARGET}
+    "../${JEV_BINUTILS}/configure" --prefix="${JEV_XTOOL_PREFIX}" $SYSROOT_CONF --disable-maintainer-mode --disable-multilib --disable-nls --enable-plugin --enable-lto --enable-languages=c,c++ --target=${JEV_TARGET}
     make -j "${NUM_CORES}" all V=1
     make -j "${NUM_CORES}" install V=1
     popd
@@ -273,7 +276,7 @@ build_gcc_stage0() {
     rm -rf build-gcc
     mkdir -p build-gcc
     pushd build-gcc
-    "${GCC_SRC_DIR}/configure" --prefix="${JEV_XTOOL_PREFIX}" $SYSROOT_CONF --disable-maintainer-mode --disable-bootstrap --disable-shared --disable-nls --disable-multilib --disable-threads --disable-tls --disable-tm-clone-registry --enable-lto --without-headers --with-gnu-as --with-gnu-ld --enable-cxx-flags="${JEV_LIBSTDCXX_FLAGS}" --enable-languages=c,c++ --target=${JEV_TARGET}
+    "${GCC_SRC_DIR}/configure" --prefix="${JEV_XTOOL_PREFIX}" $SYSROOT_CONF --with-native-system-header-dir="${JEV_XTOOL_SYSROOT}/include" --disable-maintainer-mode --disable-bootstrap --disable-shared --disable-nls --disable-multilib --disable-threads --disable-tls --disable-tm-clone-registry --enable-lto --without-headers --with-gnu-as --with-gnu-ld --enable-cxx-flags="${JEV_LIBSTDCXX_FLAGS}" --enable-languages=c,c++ --target=${JEV_TARGET}
     make -j "${NUM_CORES}" all-gcc V=0
     make -j "${NUM_CORES}" install-gcc V=0
     popd
@@ -311,7 +314,7 @@ build_gcc_stage1() {
     rm -rf build-gcc1
     mkdir -p build-gcc1
     pushd build-gcc1
-    "${GCC_SRC_DIR}/configure" --prefix="${JEV_XTOOL_PREFIX}" $SYSROOT_CONF --disable-maintainer-mode --disable-bootstrap --disable-shared --disable-nls --disable-multilib --disable-threads --disable-tls --disable-tm-clone-registry --enable-lto --with-gnu-as --with-gnu-ld --enable-cxx-flags="${JEV_LIBSTDCXX_FLAGS}" --enable-languages=c,c++ --target=${JEV_TARGET}
+    "${GCC_SRC_DIR}/configure" --prefix="${JEV_XTOOL_PREFIX}" $SYSROOT_CONF --with-native-system-header-dir="${JEV_XTOOL_SYSROOT}/include" --disable-maintainer-mode --disable-bootstrap --disable-shared --disable-nls --disable-multilib --disable-threads --disable-tls --disable-tm-clone-registry --enable-lto --with-gnu-as --with-gnu-ld --enable-cxx-flags="${JEV_LIBSTDCXX_FLAGS}" --enable-languages=c,c++ --target=${JEV_TARGET}
     make -j "${NUM_CORES}" all V=0
     make -j "${NUM_CORES}" install V=0
     # make -j 1 all V=1
@@ -349,19 +352,24 @@ build_python_stage1() {
     popd
 }
 
-build_gmp
-build_mpfr
-build_mpc
-build_isl
-build_cloog
-build_python
+# build_gmp
+# build_mpfr
+# build_mpc
+# build_isl
+# build_cloog
+# build_python
 
 # checkpoint opportunity
 # exit 1
 
 build_binutils
 build_gcc_stage0
-build_newlib
+# build_newlib
 build_picolibc
+
+# checkpoint opportunity
+exit 1
+
 build_gcc_stage1
-build_python_stage1
+# build_gdb
+# build_python_stage1
