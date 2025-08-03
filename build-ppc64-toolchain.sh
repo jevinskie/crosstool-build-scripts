@@ -139,7 +139,7 @@ NUM_CORES=$(nproc)
 if false; then
     SYSROOT_CONF=""
 else
-    SYSROOT_CONF="--with-sysroot='${JEV_XTOOL_PREFIX}/${JEV_TARGET}'"
+    SYSROOT_CONF="--with-sysroot=\"${JEV_XTOOL_SYSROOT}\""
 fi
 
 refresh_path
@@ -327,14 +327,14 @@ build_python_stage1() {
     popd
 }
 
-build_gmp
-build_mpfr
-build_mpc
-build_isl
-build_python
+# build_gmp
+# build_mpfr
+# build_mpc
+# build_isl
+# build_python
 build_binutils
 build_gcc_stage0
-build_newlib
+# build_newlib
 build_picolibc
 build_gcc_stage1
 build_python_stage1
