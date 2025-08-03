@@ -26,6 +26,9 @@ JEV_BINUTILS=binutils-2.44
 JEV_GDB=gdb-16.3
 # https://repology.org/project/isl/information
 JEV_ISL=isl-0.27
+# https://github.com/periscop/cloog/releases
+JEV_CLOOG_VERSION=0.21.1
+JEV_CLOOG="cloog-${JEV_CLOOG_VERSION}"
 # https://repology.org/project/python/information
 JEV_PYTHON=3.13.5
 
@@ -136,10 +139,10 @@ JEV_GNU_MIRROR=https://ftp.gnu.org
 
 NUM_CORES=$(nproc)
 
-if false; then
+if true; then
     SYSROOT_CONF=""
 else
-    SYSROOT_CONF="--with-sysroot=\"${JEV_XTOOL_SYSROOT}\""
+    SYSROOT_CONF="--with-sysroot=${JEV_XTOOL_SYSROOT}"
 fi
 
 refresh_path
@@ -152,7 +155,7 @@ build_gmp() {
     rm -rf build-gmp
     mkdir -p build-gmp
     pushd build-gmp
-    "../${JEV_GMP}/configure" --prefix="${JEV_XTOOL_PREFIX}" CPPFLAGS="${CPPFLAGS}" CFLAGS="${CFLAGS}" "CXXFLAGS=${CXXFLAGS}" LDFLAGS="${LDFLAGS}"
+    "../${JEV_GMP}/configure" --disable-maintainer-mode --prefix="${JEV_XTOOL_PREFIX}"
     make -j "${NUM_CORES}" all V=0
     make -j "${NUM_CORES}" install V=0
     popd
@@ -167,7 +170,7 @@ build_mpfr() {
     rm -rf build-mfr
     mkdir -p build-mpfr
     pushd build-mpfr
-    "../${JEV_MPFR}/configure" --prefix="${JEV_XTOOL_PREFIX}"
+    "../${JEV_MPFR}/configure" --disable-maintainer-mode --prefix="${JEV_XTOOL_PREFIX}"
     make -j "${NUM_CORES}" all V=0
     make -j "${NUM_CORES}" install V=0
     popd
@@ -182,7 +185,7 @@ build_mpc() {
     rm -rf build-mpc
     mkdir -p build-mpc
     pushd build-mpc
-    "../${JEV_MPC}/configure" --prefix="${JEV_XTOOL_PREFIX}"
+    "../${JEV_MPC}/configure" --disable-maintainer-mode --prefix="${JEV_XTOOL_PREFIX}"
     make -j "${NUM_CORES}" all V=0
     make -j "${NUM_CORES}" install V=0
     popd
@@ -197,7 +200,22 @@ build_isl() {
     rm -rf build-isl
     mkdir -p build-isl
     pushd build-isl
-    "../${JEV_ISL}/configure" --prefix="${JEV_XTOOL_PREFIX}"
+    "../${JEV_ISL}/configure" --disable-maintainer-mode --disable-maintainer-mode --prefix="${JEV_XTOOL_PREFIX}"
+    make -j "${NUM_CORES}" all V=0
+    make -j "${NUM_CORES}" install V=0
+    popd
+    refresh_path
+}
+
+# cloog
+build_cloog() {
+    wget -N "https://github.com/periscop/cloog/releases/download/${JEV_PICOLIBC_VERSION}/${JEV_PICOLIBC}.tar.gz"
+    rm -rf "${JEV_PICOLIBC}"
+    tar xf "${JEV_PICOLIBC}.tar.gz"
+    rm -rf build-cloog
+    mkdir -p build-cloog
+    pushd build-isl
+    "../${JEV_ISL}/configure" --disable-maintainer-mode --disable-maintainer-mode --prefix="${JEV_XTOOL_PREFIX}"
     make -j "${NUM_CORES}" all V=0
     make -j "${NUM_CORES}" install V=0
     popd
@@ -234,7 +252,7 @@ build_binutils() {
     rm -rf build-binutils
     mkdir -p build-binutils
     pushd build-binutils
-    "../${JEV_BINUTILS}/configure" --prefix="${JEV_XTOOL_PREFIX}" --disable-multilib --disable-nls --enable-plugin --enable-lto --enable-languages=c,c++ --build=aarch64-apple-darwin --host=aarch64-apple-darwin --target=${JEV_TARGET}
+    "../${JEV_BINUTILS}/configure" --prefix="${JEV_XTOOL_PREFIX}" --disable-maintainer-mode --disable-multilib --disable-nls --enable-plugin --enable-lto --enable-languages=c,c++ --target=${JEV_TARGET}
     make -j "${NUM_CORES}" all V=1
     make -j "${NUM_CORES}" install V=1
     popd
@@ -255,7 +273,7 @@ build_gcc_stage0() {
     rm -rf build-gcc
     mkdir -p build-gcc
     pushd build-gcc
-    "${GCC_SRC_DIR}/configure" --prefix="${JEV_XTOOL_PREFIX}" $SYSROOT_CONF --disable-shared --disable-nls --disable-multilib --disable-threads --disable-tls --disable-tm-clone-registry --enable-lto --without-headers --with-gnu-as --with-gnu-ld --enable-cxx-flags="${JEV_LIBSTDCXX_FLAGS}" --enable-languages=c,c++ --build=aarch64-apple-darwin --host=aarch64-apple-darwin --target=${JEV_TARGET}
+    "${GCC_SRC_DIR}/configure" --prefix="${JEV_XTOOL_PREFIX}" $SYSROOT_CONF --disable-maintainer-mode --disable-shared --disable-nls --disable-multilib --disable-threads --disable-tls --disable-tm-clone-registry --enable-lto --without-headers --with-gnu-as --with-gnu-ld --enable-cxx-flags="${JEV_LIBSTDCXX_FLAGS}" --enable-languages=c,c++ --target=${JEV_TARGET}
     make -j "${NUM_CORES}" all-gcc V=0
     make -j "${NUM_CORES}" install-gcc V=0
     popd
@@ -270,7 +288,7 @@ build_newlib() {
     rm -rf build-newlib
     mkdir -p build-newlib
     pushd build-newlib
-    "../${JEV_NEWLIB}/configure" --disable-shared --disable-multilib --prefix="${JEV_XTOOL_SYSROOT}" --build=aarch64-apple-darwin --host=aarch64-apple-darwin --target=${JEV_TARGET}
+    "../${JEV_NEWLIB}/configure" --prefix="${JEV_XTOOL_SYSROOT}" --disable-maintainer-mode --disable-shared --disable-multilib --target=${JEV_TARGET}
     make -j "${NUM_CORES}" all V=0
     make -j "${NUM_CORES}" install V=0
     popd
@@ -291,7 +309,7 @@ build_picolibc() {
 
 build_gcc_stage1() {
     pushd build-gcc
-    "${GCC_SRC_DIR}/configure" --prefix="${JEV_XTOOL_PREFIX}" $SYSROOT_CONF --disable-shared --disable-nls --disable-multilib --disable-threads --disable-tls --disable-tm-clone-registry --enable-lto --with-gnu-as --with-gnu-ld --enable-cxx-flags="${JEV_LIBSTDCXX_FLAGS}" --enable-languages=c,c++ --build=aarch64-apple-darwin --host=aarch64-apple-darwin --target=${JEV_TARGET}
+    "${GCC_SRC_DIR}/configure" --prefix="${JEV_XTOOL_PREFIX}" $SYSROOT_CONF --disable-maintainer-mode --disable-shared --disable-nls --disable-multilib --disable-threads --disable-tls --disable-tm-clone-registry --enable-lto --with-gnu-as --with-gnu-ld --enable-cxx-flags="${JEV_LIBSTDCXX_FLAGS}" --enable-languages=c,c++ --target=${JEV_TARGET}
     make -j "${NUM_CORES}" all V=0
     make -j "${NUM_CORES}" install V=0
     popd
@@ -310,7 +328,7 @@ build_gdb() {
     popd
     mkdir -p build-gdb
     pushd build-gdb
-    "../${JEV_GDB}/configure" --prefix="${JEV_XTOOL_PREFIX}" $SYSROOT_CONF --disable-nls --disable-guile --enable-python --enable-sim --enable-tui --enable-languages=c,c++ --build=aarch64-apple-darwin --host=aarch64-apple-darwin --target=${JEV_TARGET}
+    "../${JEV_GDB}/configure" --prefix="${JEV_XTOOL_PREFIX}" $SYSROOT_CONF --disable-maintainer-mode --disable-nls --disable-guile --enable-python --enable-sim --enable-tui --enable-languages=c,c++ --target=${JEV_TARGET}
     make -j "${NUM_CORES}" all V=0
     make -j "${NUM_CORES}" install V=0
     popd
@@ -327,11 +345,14 @@ build_python_stage1() {
     popd
 }
 
-# build_gmp
-# build_mpfr
-# build_mpc
-# build_isl
-# build_python
+build_gmp
+build_mpfr
+build_mpc
+build_isl
+build_python
+
+# exit 1
+
 build_binutils
 build_gcc_stage0
 # build_newlib
