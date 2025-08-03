@@ -3,7 +3,7 @@
 set -e
 set -x
 
-JEV_TARGET=powerpc64-elf
+JEV_TARGET=powerpc64-linux-gnu
 
 # https://repology.org/project/gmp/information
 JEV_GMP=gmp-6.3.0
@@ -160,7 +160,7 @@ build_gmp() {
     rm -rf build-gmp
     mkdir -p build-gmp
     pushd build-gmp
-    "../${JEV_GMP}/configure" --disable-maintainer-mode --prefix="${JEV_XTOOL_PREFIX}"
+    "../${JEV_GMP}/configure" -C --disable-maintainer-mode --prefix="${JEV_XTOOL_PREFIX}"
     make -j "${NUM_CORES}" all V=0
     make -j "${NUM_CORES}" install V=0
     popd
@@ -175,7 +175,7 @@ build_mpfr() {
     rm -rf build-mfr
     mkdir -p build-mpfr
     pushd build-mpfr
-    "../${JEV_MPFR}/configure" --disable-maintainer-mode --prefix="${JEV_XTOOL_PREFIX}"
+    "../${JEV_MPFR}/configure" -C --disable-maintainer-mode --prefix="${JEV_XTOOL_PREFIX}"
     make -j "${NUM_CORES}" all V=0
     make -j "${NUM_CORES}" install V=0
     popd
@@ -190,7 +190,7 @@ build_mpc() {
     rm -rf build-mpc
     mkdir -p build-mpc
     pushd build-mpc
-    "../${JEV_MPC}/configure" --disable-maintainer-mode --prefix="${JEV_XTOOL_PREFIX}"
+    "../${JEV_MPC}/configure" -C --disable-maintainer-mode --prefix="${JEV_XTOOL_PREFIX}"
     make -j "${NUM_CORES}" all V=0
     make -j "${NUM_CORES}" install V=0
     popd
@@ -205,7 +205,7 @@ build_isl() {
     rm -rf build-isl
     mkdir -p build-isl
     pushd build-isl
-    "../${JEV_ISL}/configure" --disable-maintainer-mode --disable-maintainer-mode --prefix="${JEV_XTOOL_PREFIX}"
+    "../${JEV_ISL}/configure" -C --disable-maintainer-mode --prefix="${JEV_XTOOL_PREFIX}"
     make -j "${NUM_CORES}" all V=0
     make -j "${NUM_CORES}" install V=0
     popd
@@ -278,7 +278,7 @@ build_gcc_stage0() {
     rm -rf build-gcc
     mkdir -p build-gcc
     pushd build-gcc
-    "${GCC_SRC_DIR}/configure" --prefix="${JEV_XTOOL_PREFIX}" $SYSROOT_CONF --with-native-system-header-dir=/include --disable-maintainer-mode --disable-bootstrap --disable-shared --disable-nls --disable-multilib --disable-tm-clone-registry --enable-lto --without-headers --with-gnu-as --with-gnu-ld --enable-cxx-flags="${JEV_LIBSTDCXX_FLAGS}" --enable-languages=c,c++ --target=${JEV_TARGET}
+    "${GCC_SRC_DIR}/configure" --prefix="${JEV_XTOOL_PREFIX}" $SYSROOT_CONF --with-native-system-header-dir=/include --disable-maintainer-mode --disable-bootstrap --disable-shared --disable-nls --disable-multilib --disable-tm-clone-registry --with-newlib --enable-lto --without-headers --with-gnu-as --with-gnu-ld --enable-languages=c --target=${JEV_TARGET}
     make -j "${NUM_CORES}" all-gcc V=0
     make -j "${NUM_CORES}" install-gcc V=0
     popd
@@ -293,7 +293,7 @@ build_newlib() {
     rm -rf build-newlib
     mkdir -p build-newlib
     pushd build-newlib
-    "../${JEV_NEWLIB}/configure" --prefix="${JEV_XTOOL_SYSROOT}" --disable-maintainer-mode --disable-shared --disable-multilib --target=${JEV_TARGET}
+    "../${JEV_NEWLIB}/configure" -C --prefix="${JEV_XTOOL_SYSROOT}" --disable-maintainer-mode --disable-shared --disable-multilib --target=${JEV_TARGET}
     make -j "${NUM_CORES}" all V=0
     make -j "${NUM_CORES}" install V=0
     popd
@@ -316,7 +316,7 @@ build_gcc_stage1() {
     rm -rf build-gcc1
     mkdir -p build-gcc1
     pushd build-gcc1
-    "${GCC_SRC_DIR}/configure" --prefix="${JEV_XTOOL_PREFIX}" $SYSROOT_CONF --with-native-system-header-dir=/include --disable-maintainer-mode --disable-bootstrap --disable-shared --disable-nls --disable-multilib --disable-tm-clone-registry --enable-lto --with-gnu-as --with-gnu-ld --enable-cxx-flags="${JEV_LIBSTDCXX_FLAGS}" --enable-languages=c,c++ --target=${JEV_TARGET}
+    "${GCC_SRC_DIR}/configure" -C --prefix="${JEV_XTOOL_PREFIX}" $SYSROOT_CONF --with-native-system-header-dir=/include --disable-maintainer-mode --disable-bootstrap --disable-shared --disable-nls --disable-multilib --disable-tm-clone-registry --with-newlib --enable-lto --with-gnu-as --with-gnu-ld --enable-cxx-flags="${JEV_LIBSTDCXX_FLAGS}" --enable-languages=c,c++ --target=${JEV_TARGET}
     make -j "${NUM_CORES}" all V=0
     make -j "${NUM_CORES}" install V=0
     # make -j 1 all V=1
@@ -337,7 +337,7 @@ build_gdb() {
     popd
     mkdir -p build-gdb
     pushd build-gdb
-    "../${JEV_GDB}/configure" --prefix="${JEV_XTOOL_PREFIX}" $SYSROOT_CONF --disable-maintainer-mode --disable-nls --disable-guile --enable-python --enable-sim --enable-tui --enable-languages=c,c++ --target=${JEV_TARGET}
+    "../${JEV_GDB}/configure" -C --prefix="${JEV_XTOOL_PREFIX}" $SYSROOT_CONF --disable-maintainer-mode --disable-nls --disable-guile --enable-python --enable-sim --enable-tui --enable-languages=c,c++ --target=${JEV_TARGET}
     make -j "${NUM_CORES}" all V=0
     make -j "${NUM_CORES}" install V=0
     popd
@@ -354,17 +354,17 @@ build_python_stage1() {
     popd
 }
 
-build_gmp
-build_mpfr
-build_mpc
-build_isl
-build_cloog
-build_python
+# build_gmp
+# build_mpfr
+# build_mpc
+# build_isl
+# build_cloog
+# build_python
 
 # checkpoint opportunity stage0
 # exit 1
 
-build_binutils
+# build_binutils
 
 # checkpoint opportunity stage1
 # exit 1
