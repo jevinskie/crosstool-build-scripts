@@ -340,11 +340,11 @@ build_gcc_stage1() {
     # rm -rf build-gcc1
     mkdir -p build-gcc1
     pushd build-gcc1
-    env inhibit_libc=true "${GCC_SRC_DIR}/configure" -C --prefix="${JEV_XTOOL_PREFIX}" $SYSROOT_CONF --with-native-system-header-dir=/include --disable-maintainer-mode --disable-bootstrap --disable-shared --disable-nls --disable-multilib --disable-tm-clone-registry --disable-threads --disable-tls --disable-gcov --with-newlib --enable-lto --with-gnu-as --with-gnu-ld --enable-cxx-flags="${JEV_LIBSTDCXX_FLAGS}" --enable-languages=c,c++ --target=${JEV_TARGET} inhibit_libc=true
+    # env inhibit_libc=true "${GCC_SRC_DIR}/configure" -C --prefix="${JEV_XTOOL_PREFIX}" $SYSROOT_CONF --with-native-system-header-dir=/include --disable-maintainer-mode --disable-bootstrap --disable-shared --disable-nls --disable-multilib --disable-tm-clone-registry --disable-threads --disable-tls --disable-gcov --disable-gomp --with-newlib --enable-lto --with-gnu-as --with-gnu-ld --enable-cxx-flags="${JEV_LIBSTDCXX_FLAGS}" --enable-languages=c,c++ --target=${JEV_TARGET} inhibit_libc=true
     # env inhibit_libc=true make -j "${NUM_CORES}" all V=0
     # env inhibit_libc=true make -j "${NUM_CORES}" install V=0
-    env inhibit_libc=true make -j "${NUM_CORES}" all-gcc all-target-libgcc libstdc++-v3 all-lto-plugin V=0
-    env inhibit_libc=true make -j "${NUM_CORES}" install-gcc install-target-libstdc++-v3 install-lto-plugin V=0
+    env inhibit_libc=true make -j "${NUM_CORES}" all-gcc all-target-libstdc++-v3 all-lto-plugin V=0
+    env inhibit_libc=true make -j "${NUM_CORES}" install-gcc install-target-libgcc install-target-libstdc++-v3 install-lto-plugin V=0
     # make -j 1 all V=1
     # make -j 1 install V=1
     popd
