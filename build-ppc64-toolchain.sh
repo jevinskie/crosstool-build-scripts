@@ -369,9 +369,9 @@ build_python_stage1() {
 # checkpoint opportunity stage1
 # exit 1
 
-build_gcc_stage0
+# build_gcc_stage0
 # build_newlib
-build_picolibc
+# build_picolibc
 
 # checkpoint opportunity stage2
 # exit 1
