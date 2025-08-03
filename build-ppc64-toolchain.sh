@@ -154,10 +154,10 @@ refresh_path
 
 # gmp
 build_gmp() {
-    wget -N "${JEV_GNU_MIRROR}/gnu/gmp/${JEV_GMP}.tar.xz"
-    rm -rf "${JEV_GMP}"
-    tar xf "${JEV_GMP}.tar.xz"
-    rm -rf build-gmp
+    # wget -N "${JEV_GNU_MIRROR}/gnu/gmp/${JEV_GMP}.tar.xz"
+    # rm -rf "${JEV_GMP}"
+    # tar xf "${JEV_GMP}.tar.xz"
+    # rm -rf build-gmp
     mkdir -p build-gmp
     pushd build-gmp
     "../${JEV_GMP}/configure" -C --disable-maintainer-mode --prefix="${JEV_XTOOL_PREFIX}"
@@ -169,10 +169,10 @@ build_gmp() {
 
 # mpfr
 build_mpfr() {
-    wget -N "${JEV_GNU_MIRROR}/gnu/mpfr/${JEV_MPFR}.tar.xz"
-    rm -rf "${JEV_MPFR}"
-    tar xf "${JEV_MPFR}.tar.xz"
-    rm -rf build-mfr
+    # wget -N "${JEV_GNU_MIRROR}/gnu/mpfr/${JEV_MPFR}.tar.xz"
+    # rm -rf "${JEV_MPFR}"
+    # tar xf "${JEV_MPFR}.tar.xz"
+    # rm -rf build-mfr
     mkdir -p build-mpfr
     pushd build-mpfr
     "../${JEV_MPFR}/configure" -C --disable-maintainer-mode --prefix="${JEV_XTOOL_PREFIX}"
@@ -184,10 +184,10 @@ build_mpfr() {
 
 # mpc
 build_mpc() {
-    wget -N "${JEV_GNU_MIRROR}/gnu/mpc/${JEV_MPC}.tar.gz"
-    rm -rf "${JEV_MPC}"
-    tar xf "${JEV_MPC}.tar.gz"
-    rm -rf build-mpc
+    # wget -N "${JEV_GNU_MIRROR}/gnu/mpc/${JEV_MPC}.tar.gz"
+    # rm -rf "${JEV_MPC}"
+    # tar xf "${JEV_MPC}.tar.gz"
+    # rm -rf build-mpc
     mkdir -p build-mpc
     pushd build-mpc
     "../${JEV_MPC}/configure" -C --disable-maintainer-mode --prefix="${JEV_XTOOL_PREFIX}"
@@ -199,10 +199,10 @@ build_mpc() {
 
 # isl
 build_isl() {
-    wget -N "https://libisl.sourceforge.io/${JEV_ISL}.tar.xz"
-    rm -rf "${JEV_ISL}"
-    tar xf "${JEV_ISL}.tar.xz"
-    rm -rf build-isl
+    # wget -N "https://libisl.sourceforge.io/${JEV_ISL}.tar.xz"
+    # rm -rf "${JEV_ISL}"
+    # tar xf "${JEV_ISL}.tar.xz"
+    # rm -rf build-isl
     mkdir -p build-isl
     pushd build-isl
     "../${JEV_ISL}/configure" -C --disable-maintainer-mode --prefix="${JEV_XTOOL_PREFIX}"
@@ -214,13 +214,13 @@ build_isl() {
 
 # cloog
 build_cloog() {
-    wget -N "https://github.com/periscop/cloog/releases/download/${JEV_CLOOG}/${JEV_CLOOG}.tar.gz"
-    rm -rf "${JEV_CLOOG}"
-    tar xf "${JEV_CLOOG}.tar.gz"
-    rm -rf build-cloog
+    # wget -N "https://github.com/periscop/cloog/releases/download/${JEV_CLOOG}/${JEV_CLOOG}.tar.gz"
+    # rm -rf "${JEV_CLOOG}"
+    # tar xf "${JEV_CLOOG}.tar.gz"
+    # rm -rf build-cloog
     mkdir -p build-cloog
     pushd build-cloog
-    "../${JEV_CLOOG}/configure" --disable-maintainer-mode --disable-maintainer-mode --prefix="${JEV_XTOOL_PREFIX}" --with-isl=system
+    "../${JEV_CLOOG}/configure" -C --disable-maintainer-mode --disable-maintainer-mode --prefix="${JEV_XTOOL_PREFIX}" --with-isl=system
     make -j "${NUM_CORES}" all V=0
     make -j "${NUM_CORES}" install V=0
     popd
@@ -229,13 +229,13 @@ build_cloog() {
 
 # python
 build_python() {
-    wget -N "https://www.python.org/ftp/python/${JEV_PYTHON}/Python-${JEV_PYTHON}.tar.xz"
-    rm -rf "${JEV_PYTHON}"
-    tar xf "Python-${JEV_PYTHON}.tar.xz"
-    rm -rf build-python
+    # wget -N "https://www.python.org/ftp/python/${JEV_PYTHON}/Python-${JEV_PYTHON}.tar.xz"
+    # rm -rf "${JEV_PYTHON}"
+    # tar xf "Python-${JEV_PYTHON}.tar.xz"
+    # rm -rf build-python
     mkdir -p build-python
     pushd build-python
-    "../Python-${JEV_PYTHON}/configure" --prefix="${JEV_XTOOL_PREFIX}" --enable-shared
+    "../Python-${JEV_PYTHON}/configure" -C --prefix="${JEV_XTOOL_PREFIX}" --enable-shared --disable-test-modules
     make -j "${NUM_CORES}" all V=0
     make -j "${NUM_CORES}" install V=0
     popd
@@ -248,16 +248,16 @@ build_python() {
 
 # binutils
 build_binutils() {
-    wget -N "${JEV_GNU_MIRROR}/gnu/binutils/${JEV_BINUTILS}.tar.zst"
-    rm -rf "${JEV_BINUTILS}"
-    tar xf "${JEV_BINUTILS}.tar.zst"
+    # wget -N "${JEV_GNU_MIRROR}/gnu/binutils/${JEV_BINUTILS}.tar.zst"
+    # rm -rf "${JEV_BINUTILS}"
+    # tar xf "${JEV_BINUTILS}.tar.zst"
     pushd "${JEV_BINUTILS}"
     sd -F '#if defined(MACOS) || defined(TARGET_OS_MAC)' '#if !defined(__APPLE__) && (defined(MACOS) || defined(TARGET_OS_MAC))' zlib/zutil.h
     popd
-    rm -rf build-binutils
+    # rm -rf build-binutils
     mkdir -p build-binutils
     pushd build-binutils
-    "../${JEV_BINUTILS}/configure" --prefix="${JEV_XTOOL_PREFIX}" --disable-maintainer-mode --disable-multilib --disable-nls --enable-plugin --enable-lto --enable-languages=c,c++ --target=${JEV_TARGET}
+    "../${JEV_BINUTILS}/configure" -C --prefix="${JEV_XTOOL_PREFIX}" --disable-maintainer-mode --disable-multilib --disable-nls --enable-plugin --enable-lto --enable-languages=c,c++ --target=${JEV_TARGET}
     make -j "${NUM_CORES}" all V=1
     make -j "${NUM_CORES}" install V=1
     popd
@@ -273,12 +273,11 @@ build_gcc_stage0() {
         pushd "${JEV_GCC}"
         sd -F '#if defined(MACOS) || defined(TARGET_OS_MAC)' '#if !defined(__APPLE__) && (defined(MACOS) || defined(TARGET_OS_MAC))' zlib/zutil.h
         popd
-        # true
     fi
-    rm -rf build-gcc
+    # rm -rf build-gcc
     mkdir -p build-gcc
     pushd build-gcc
-    "${GCC_SRC_DIR}/configure" --prefix="${JEV_XTOOL_PREFIX}" $SYSROOT_CONF --with-native-system-header-dir=/include --disable-maintainer-mode --disable-bootstrap --disable-shared --disable-nls --disable-multilib --disable-tm-clone-registry --with-newlib --enable-lto --without-headers --with-gnu-as --with-gnu-ld --enable-languages=c --target=${JEV_TARGET}
+    "${GCC_SRC_DIR}/configure" -C --prefix="${JEV_XTOOL_PREFIX}" $SYSROOT_CONF --with-native-system-header-dir=/include --disable-maintainer-mode --disable-bootstrap --disable-shared --disable-nls --disable-multilib --disable-tm-clone-registry --with-newlib --enable-lto --without-headers --with-gnu-as --with-gnu-ld --enable-languages=c --target=${JEV_TARGET}
     make -j "${NUM_CORES}" all-gcc V=0
     make -j "${NUM_CORES}" install-gcc V=0
     popd
@@ -287,10 +286,10 @@ build_gcc_stage0() {
 
 # newlib
 build_newlib() {
-    wget -N "https://sourceware.org/pub/newlib/${JEV_NEWLIB}.tar.gz"
-    rm -rf "${JEV_NEWLIB}"
-    tar xf "${JEV_NEWLIB}.tar.gz"
-    rm -rf build-newlib
+    # wget -N "https://sourceware.org/pub/newlib/${JEV_NEWLIB}.tar.gz"
+    # rm -rf "${JEV_NEWLIB}"
+    # tar xf "${JEV_NEWLIB}.tar.gz"
+    # rm -rf build-newlib
     mkdir -p build-newlib
     pushd build-newlib
     "../${JEV_NEWLIB}/configure" -C --prefix="${JEV_XTOOL_SYSROOT}" --disable-maintainer-mode --disable-shared --disable-multilib --target=${JEV_TARGET}
@@ -302,9 +301,9 @@ build_newlib() {
 
 # picolibc
 build_picolibc() {
-    wget -N "https://github.com/picolibc/picolibc/releases/download/${JEV_PICOLIBC_VERSION}/${JEV_PICOLIBC}.tar.xz"
-    rm -rf "${JEV_PICOLIBC}"
-    tar xf "${JEV_PICOLIBC}.tar.xz"
+    # wget -N "https://github.com/picolibc/picolibc/releases/download/${JEV_PICOLIBC_VERSION}/${JEV_PICOLIBC}.tar.xz"
+    # rm -rf "${JEV_PICOLIBC}"
+    # tar xf "${JEV_PICOLIBC}.tar.xz"
     rm -rf build-picolibc
     env -u CPPFLAGS -u CFLAGS -u CXXFLAGS -u LDFLAGS meson setup --cross-file "${JEV_PICOLIBC}/scripts/cross-powerpc64-linux-gnu.txt" --prefix "${JEV_XTOOL_SYSROOT}" build-picolibc "${JEV_PICOLIBC}"
     env -u CPPFLAGS -u CFLAGS -u CXXFLAGS -u LDFLAGS meson compile -C build-picolibc
@@ -313,7 +312,7 @@ build_picolibc() {
 }
 
 build_gcc_stage1() {
-    rm -rf build-gcc1
+    # rm -rf build-gcc1
     mkdir -p build-gcc1
     pushd build-gcc1
     "${GCC_SRC_DIR}/configure" -C --prefix="${JEV_XTOOL_PREFIX}" $SYSROOT_CONF --with-native-system-header-dir=/include --disable-maintainer-mode --disable-bootstrap --disable-shared --disable-nls --disable-multilib --disable-tm-clone-registry --with-newlib --enable-lto --with-gnu-as --with-gnu-ld --enable-cxx-flags="${JEV_LIBSTDCXX_FLAGS}" --enable-languages=c,c++ --target=${JEV_TARGET}
@@ -327,17 +326,17 @@ build_gcc_stage1() {
 
 # gdb
 build_gdb() {
-    wget -N ${JEV_GNU_MIRROR}/gnu/gdb/${JEV_GDB}.tar.xz
-    rm -rf "${JEV_GDB}"
-    tar xf "${JEV_GDB}.tar.xz"
-    rm -rf build-gdb
+    # wget -N ${JEV_GNU_MIRROR}/gnu/gdb/${JEV_GDB}.tar.xz
+    # rm -rf "${JEV_GDB}"
+    # tar xf "${JEV_GDB}.tar.xz"
+    # rm -rf build-gdb
     mkdir -p build-gdb
     pushd "${JEV_GDB}"
     sd -F '#if defined(MACOS) || defined(TARGET_OS_MAC)' '#if !defined(__APPLE__) && (defined(MACOS) || defined(TARGET_OS_MAC))' zlib/zutil.h
     popd
     mkdir -p build-gdb
     pushd build-gdb
-    "../${JEV_GDB}/configure" -C --prefix="${JEV_XTOOL_PREFIX}" $SYSROOT_CONF --disable-maintainer-mode --disable-nls --disable-guile --enable-python --enable-sim --enable-tui --enable-languages=c,c++ --target=${JEV_TARGET}
+    "../${JEV_GDB}/configure" -C --prefix="${JEV_XTOOL_PREFIX}" $SYSROOT_CONF --disable-maintainer-mode --disable-nls --disable-guile --enable-python --enable-sim --enable-tui --without-headers --enable-languages=c,c++ --target=${JEV_TARGET}
     make -j "${NUM_CORES}" all V=0
     make -j "${NUM_CORES}" install V=0
     popd
