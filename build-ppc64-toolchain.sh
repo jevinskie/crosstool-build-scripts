@@ -37,6 +37,29 @@ JEV_XTOOL_PREFIX=/opt/x-tools/ppc64-elf
 JEV_XTOOL_SYSROOT="${JEV_XTOOL_PREFIX}/${JEV_TARGET}/sysroot"
 
 
+function set_badge() {
+    if [[ "x${LC_TERMINAL}"="xiTerm2" ]]; then
+        printf "\e]1337;SetBadgeFormat=%s\a" $(echo -n "${@}" | base64)
+    fi
+}
+
+
+function clear_badge() {
+    if [[ "x${LC_TERMINAL}"="xiTerm2" ]]; then
+        printf "\e]1337;SetBadgeFormat=%s\a" $(echo -n "" | base64)
+    fi
+}
+
+function trap_handler() {
+  echo "Caught SIGINT ..."
+  clear_badge
+  exit 0
+}
+
+trap "trap_handler" 1 2 # SIGHUP SIGINT
+
+
+
 if [[ "${OS}" == "Windows_NT" ]]; then
     echo "Windows not supported yet" >&2
     exit 1
@@ -76,9 +99,11 @@ else
     GCC_SRC_DIR="${SCRIPT_DIR}/${JEV_GCC}"
 fi
 
+
 function refresh_path() {
     hash -r
 }
+
 
 if [[ "${OS}" == "Windows_NT" ]]; then
     echo "Windows not supported yet" >&2
@@ -277,7 +302,7 @@ build_gcc_stage0() {
     # rm -rf build-gcc
     mkdir -p build-gcc
     pushd build-gcc
-    "${GCC_SRC_DIR}/configure" -C --prefix="${JEV_XTOOL_PREFIX}" $SYSROOT_CONF --with-native-system-header-dir=/include --disable-maintainer-mode --disable-bootstrap --disable-shared --disable-nls --disable-multilib --disable-tm-clone-registry --with-newlib --enable-lto --without-headers --with-gnu-as --with-gnu-ld --enable-languages=c --target=${JEV_TARGET}
+    "${GCC_SRC_DIR}/configure" -C --prefix="${JEV_XTOOL_PREFIX}" $SYSROOT_CONF --with-native-system-header-dir=/include --disable-maintainer-mode --disable-bootstrap --disable-shared --disable-nls --disable-multilib --disable-tm-clone-registry --disable-threads --with-newlib --enable-lto --without-headers --with-gnu-as --with-gnu-ld --enable-languages=c --target=${JEV_TARGET}
     make -j "${NUM_CORES}" all-gcc V=0
     make -j "${NUM_CORES}" install-gcc V=0
     popd
@@ -315,9 +340,9 @@ build_gcc_stage1() {
     # rm -rf build-gcc1
     mkdir -p build-gcc1
     pushd build-gcc1
-    "${GCC_SRC_DIR}/configure" -C --prefix="${JEV_XTOOL_PREFIX}" $SYSROOT_CONF --with-native-system-header-dir=/include --disable-maintainer-mode --disable-bootstrap --disable-shared --disable-nls --disable-multilib --disable-tm-clone-registry --with-newlib --enable-lto --with-gnu-as --with-gnu-ld --enable-cxx-flags="${JEV_LIBSTDCXX_FLAGS}" --enable-languages=c,c++ --target=${JEV_TARGET}
-    make -j "${NUM_CORES}" all V=0
-    make -j "${NUM_CORES}" install V=0
+    env inhibit_libc=true "${GCC_SRC_DIR}/configure" -C --prefix="${JEV_XTOOL_PREFIX}" $SYSROOT_CONF --with-native-system-header-dir=/include --disable-maintainer-mode --disable-bootstrap --disable-shared --disable-nls --disable-multilib --disable-tm-clone-registry --disable-threads --with-newlib --enable-lto --with-gnu-as --with-gnu-ld --enable-cxx-flags="${JEV_LIBSTDCXX_FLAGS}" --enable-languages=c,c++ --target=${JEV_TARGET} inhibit_libc=true
+    env inhibit_libc=true make -j "${NUM_CORES}" all V=0
+    env inhibit_libc=true make -j "${NUM_CORES}" install V=0
     # make -j 1 all V=1
     # make -j 1 install V=1
     popd
@@ -378,3 +403,5 @@ build_python_stage1() {
 build_gcc_stage1
 # build_gdb
 # build_python_stage1
+
+trap_handler
