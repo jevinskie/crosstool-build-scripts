@@ -3,7 +3,7 @@
 set -e
 set -x
 
-JEV_TARGET=powerpc64-linux-gnu
+JEV_TARGET=powerpc64-elf
 
 # https://repology.org/project/gmp/information
 JEV_GMP=gmp-6.3.0
@@ -354,27 +354,27 @@ build_python_stage1() {
     popd
 }
 
-# build_gmp
-# build_mpfr
-# build_mpc
-# build_isl
-# build_cloog
-# build_python
+build_gmp
+build_mpfr
+build_mpc
+build_isl
+build_cloog
+build_python
 
 # checkpoint opportunity stage0
 # exit 1
 
-# build_binutils
+build_binutils
 
 # checkpoint opportunity stage1
 # exit 1
 
-# build_gcc_stage0
+build_gcc_stage0
 # build_newlib
 build_picolibc
 
 # checkpoint opportunity stage2
-exit 1
+# exit 1
 
 build_gcc_stage1
 # build_gdb
