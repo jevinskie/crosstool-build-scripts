@@ -26,9 +26,9 @@ JEV_BINUTILS=binutils-2.44
 JEV_GDB=gdb-16.3
 # https://repology.org/project/isl/information
 JEV_ISL=isl-0.27
+# https://repology.org/project/cloog/information
 # https://github.com/periscop/cloog/releases
-JEV_CLOOG_VERSION=0.21.1
-JEV_CLOOG="cloog-${JEV_CLOOG_VERSION}"
+JEV_CLOOG=cloog-0.21.1
 # https://repology.org/project/python/information
 JEV_PYTHON=3.13.5
 
@@ -209,13 +209,13 @@ build_isl() {
 
 # cloog
 build_cloog() {
-    wget -N "https://github.com/periscop/cloog/releases/download/${JEV_PICOLIBC_VERSION}/${JEV_PICOLIBC}.tar.gz"
-    rm -rf "${JEV_PICOLIBC}"
-    tar xf "${JEV_PICOLIBC}.tar.gz"
+    wget -N "https://github.com/periscop/cloog/releases/download/${JEV_CLOOG}/${JEV_CLOOG}.tar.gz"
+    rm -rf "${JEV_CLOOG}"
+    tar xf "${JEV_CLOOG}.tar.gz"
     rm -rf build-cloog
     mkdir -p build-cloog
-    pushd build-isl
-    "../${JEV_ISL}/configure" --disable-maintainer-mode --disable-maintainer-mode --prefix="${JEV_XTOOL_PREFIX}"
+    pushd build-cloog
+    "../${JEV_CLOOG}/configure" --disable-maintainer-mode --disable-maintainer-mode --prefix="${JEV_XTOOL_PREFIX}" --with-isl=system
     make -j "${NUM_CORES}" all V=0
     make -j "${NUM_CORES}" install V=0
     popd
@@ -273,7 +273,7 @@ build_gcc_stage0() {
     rm -rf build-gcc
     mkdir -p build-gcc
     pushd build-gcc
-    "${GCC_SRC_DIR}/configure" --prefix="${JEV_XTOOL_PREFIX}" $SYSROOT_CONF --disable-maintainer-mode --disable-shared --disable-nls --disable-multilib --disable-threads --disable-tls --disable-tm-clone-registry --enable-lto --without-headers --with-gnu-as --with-gnu-ld --enable-cxx-flags="${JEV_LIBSTDCXX_FLAGS}" --enable-languages=c,c++ --target=${JEV_TARGET}
+    "${GCC_SRC_DIR}/configure" --prefix="${JEV_XTOOL_PREFIX}" $SYSROOT_CONF --disable-maintainer-mode --disable-bootstrap --disable-shared --disable-nls --disable-multilib --disable-threads --disable-tls --disable-tm-clone-registry --enable-lto --without-headers --with-gnu-as --with-gnu-ld --enable-cxx-flags="${JEV_LIBSTDCXX_FLAGS}" --enable-languages=c,c++ --target=${JEV_TARGET}
     make -j "${NUM_CORES}" all-gcc V=0
     make -j "${NUM_CORES}" install-gcc V=0
     popd
@@ -308,10 +308,14 @@ build_picolibc() {
 }
 
 build_gcc_stage1() {
-    pushd build-gcc
-    "${GCC_SRC_DIR}/configure" --prefix="${JEV_XTOOL_PREFIX}" $SYSROOT_CONF --disable-maintainer-mode --disable-shared --disable-nls --disable-multilib --disable-threads --disable-tls --disable-tm-clone-registry --enable-lto --with-gnu-as --with-gnu-ld --enable-cxx-flags="${JEV_LIBSTDCXX_FLAGS}" --enable-languages=c,c++ --target=${JEV_TARGET}
+    rm -rf build-gcc1
+    mkdir -p build-gcc1
+    pushd build-gcc1
+    "${GCC_SRC_DIR}/configure" --prefix="${JEV_XTOOL_PREFIX}" $SYSROOT_CONF --disable-maintainer-mode --disable-bootstrap --disable-shared --disable-nls --disable-multilib --disable-threads --disable-tls --disable-tm-clone-registry --enable-lto --with-gnu-as --with-gnu-ld --enable-cxx-flags="${JEV_LIBSTDCXX_FLAGS}" --enable-languages=c,c++ --target=${JEV_TARGET}
     make -j "${NUM_CORES}" all V=0
     make -j "${NUM_CORES}" install V=0
+    # make -j 1 all V=1
+    # make -j 1 install V=1
     popd
     refresh_path
 }
@@ -349,13 +353,15 @@ build_gmp
 build_mpfr
 build_mpc
 build_isl
+build_cloog
 build_python
 
+# checkpoint opportunity
 # exit 1
 
 build_binutils
 build_gcc_stage0
-# build_newlib
+build_newlib
 build_picolibc
 build_gcc_stage1
 build_python_stage1
