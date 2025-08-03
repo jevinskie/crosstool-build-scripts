@@ -31,6 +31,8 @@ JEV_PYTHON=3.13.5
 
 
 JEV_XTOOL_PREFIX=/opt/x-tools/ppc64-elf
+JEV_XTOOL_SYSROOT="${JEV_XTOOL_PREFIX}/${JEV_TARGET}"
+
 
 if [[ "${OS}" == "Windows_NT" ]]; then
     echo "Windows not supported yet" >&2
@@ -114,7 +116,7 @@ fi
 mkdir -p "${JEV_XTOOL_PREFIX}/bin"
 mkdir -p "${JEV_XTOOL_PREFIX}/include"
 mkdir -p "${JEV_XTOOL_PREFIX}/lib/pkgconfig"
-# mkdir -p "${JEV_XTOOL_PREFIX}/${JEV_TARGET}"
+mkdir -p "${JEV_XTOOL_SYSROOT}"
 
 export PATH="${JEV_XTOOL_PREFIX}/bin:${PATH}"
 export PKG_CONFIG_PATH="${JEV_XTOOL_PREFIX}/lib/pkgconfig:${PKG_CONFIG_PATH}"
@@ -122,7 +124,7 @@ export LDFLAGS="-L${JEV_XTOOL_PREFIX}/lib -Wl,-rpath,${JEV_XTOOL_PREFIX}/lib ${L
 export CPPFLAGS="-I${JEV_XTOOL_PREFIX}/include ${CPPFLAGS}"
 export CFLAGS="${CPPFLAGS} -Wno-error"
 export CXXFLAGS="${CPPFLAGS} -Wno-error"
-export CFLAGS_FOR_TARGET="-DPREFER_SIZE_OVER_SPEED=1 -DSMALL_MEMORY=1 -DSMALL_DTOA=1 -Oz -g -fno-unwind-tables -fno-asynchronous-unwind-tables -fno-exceptions -fomit-frame-pointer -ffunction-sections -fdata-sections -fvisibility=hidden"
+export CFLAGS_FOR_TARGET="-DPREFER_SIZE_OVER_SPEED=1 -DSMALL_MEMORY=1 -DSMALL_DTOA=1 -Oz -g -fno-unwind-tables -fno-asynchronous-unwind-tables -fno-exceptions -fomit-frame-pointer -ffunction-sections -fdata-sections -fvisibility=hidden -isystem ${JEV_XTOOL_SYSROOT}"
 export CXXFLAGS_FOR_TARGET="${CFLAGS_FOR_TARGET} -fno-rtti"
 export LDFLAGS_FOR_TARGET="-Oz -fno-unwind-tables -fno-asynchronous-unwind-tables -fno-exceptions -ffunction-sections -fdata-sections -fvisibility=hidden -Wl,--gc-sections"
 JEV_LIBSTDCXX_FLAGS="-Oz -g -fno-unwind-tables -fno-asynchronous-unwind-tables -fno-exceptions -fomit-frame-pointer -ffunction-sections -fdata-sections -fvisibility=hidden -fno-rtti"
@@ -232,7 +234,7 @@ build_binutils() {
     rm -rf build-binutils
     mkdir -p build-binutils
     pushd build-binutils
-    "../${JEV_BINUTILS}/configure" --prefix="${JEV_XTOOL_PREFIX}" --disable-multilib --enable-plugin --enable-lto --enable-languages=c,c++ --build=aarch64-apple-darwin --host=aarch64-apple-darwin --target=${JEV_TARGET}
+    "../${JEV_BINUTILS}/configure" --prefix="${JEV_XTOOL_PREFIX}" --disable-multilib --disable-nls --enable-plugin --enable-lto --enable-languages=c,c++ --build=aarch64-apple-darwin --host=aarch64-apple-darwin --target=${JEV_TARGET}
     make -j "${NUM_CORES}" all V=1
     make -j "${NUM_CORES}" install V=1
     popd
@@ -253,7 +255,7 @@ build_gcc_stage0() {
     rm -rf build-gcc
     mkdir -p build-gcc
     pushd build-gcc
-    "${GCC_SRC_DIR}/configure" --prefix="${JEV_XTOOL_PREFIX}" $SYSROOT_CONF --disable-bootstrap --disable-shared --disable-multilib --disable-threads --disable-tls --disable-tm-clone-registry --enable-lto --without-headers --with-gnu-as --with-gnu-ld --enable-cxx-flags="${JEV_LIBSTDCXX_FLAGS}" --enable-languages=c,c++ --build=aarch64-apple-darwin --host=aarch64-apple-darwin --target=${JEV_TARGET}
+    "${GCC_SRC_DIR}/configure" --prefix="${JEV_XTOOL_PREFIX}" $SYSROOT_CONF --disable-shared --disable-nls --disable-multilib --disable-threads --disable-tls --disable-tm-clone-registry --enable-lto --without-headers --with-gnu-as --with-gnu-ld --enable-cxx-flags="${JEV_LIBSTDCXX_FLAGS}" --enable-languages=c,c++ --build=aarch64-apple-darwin --host=aarch64-apple-darwin --target=${JEV_TARGET}
     make -j "${NUM_CORES}" all-gcc V=0
     make -j "${NUM_CORES}" install-gcc V=0
     popd
@@ -268,7 +270,7 @@ build_newlib() {
     rm -rf build-newlib
     mkdir -p build-newlib
     pushd build-newlib
-    "../${JEV_NEWLIB}/configure" --disable-shared --disable-multilib --prefix="${JEV_XTOOL_PREFIX}/${JEV_TARGET}" --build=aarch64-apple-darwin --host=aarch64-apple-darwin --target=${JEV_TARGET}
+    "../${JEV_NEWLIB}/configure" --disable-shared --disable-multilib --prefix="${JEV_XTOOL_SYSROOT}" --build=aarch64-apple-darwin --host=aarch64-apple-darwin --target=${JEV_TARGET}
     make -j "${NUM_CORES}" all V=0
     make -j "${NUM_CORES}" install V=0
     popd
@@ -281,7 +283,7 @@ build_picolibc() {
     rm -rf "${JEV_PICOLIBC}"
     tar xf "${JEV_PICOLIBC}.tar.xz"
     rm -rf build-picolibc
-    meson setup --cross-file "${JEV_PICOLIBC}/scripts/cross-powerpc64-linux-gnu.txt" --prefix "${JEV_XTOOL_PREFIX}" build-picolibc "${JEV_PICOLIBC}"
+    meson setup --cross-file "${JEV_PICOLIBC}/scripts/cross-powerpc64-linux-gnu.txt" --prefix "${JEV_XTOOL_SYSROOT}" build-picolibc "${JEV_PICOLIBC}"
     meson compile -C build-picolibc
     meson install -C build-picolibc
     refresh_path
@@ -289,7 +291,7 @@ build_picolibc() {
 
 build_gcc_stage1() {
     pushd build-gcc
-    "${GCC_SRC_DIR}/configure" --prefix="${JEV_XTOOL_PREFIX}" $SYSROOT_CONF --disable-bootstrap --disable-shared --disable-nls --disable-multilib --disable-threads --disable-tls --disable-tm-clone-registry --enable-lto --with-gnu-as --with-gnu-ld --enable-cxx-flags="${JEV_LIBSTDCXX_FLAGS}" --enable-languages=c,c++ --build=aarch64-apple-darwin --host=aarch64-apple-darwin --target=${JEV_TARGET}
+    "${GCC_SRC_DIR}/configure" --prefix="${JEV_XTOOL_PREFIX}" $SYSROOT_CONF --disable-shared --disable-nls --disable-multilib --disable-threads --disable-tls --disable-tm-clone-registry --enable-lto --with-gnu-as --with-gnu-ld --enable-cxx-flags="${JEV_LIBSTDCXX_FLAGS}" --enable-languages=c,c++ --build=aarch64-apple-darwin --host=aarch64-apple-darwin --target=${JEV_TARGET}
     make -j "${NUM_CORES}" all V=0
     make -j "${NUM_CORES}" install V=0
     popd
